@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Prompt Pro 爆炸点 · 专业提词器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #2b3b4e, #14181f);
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* 可拖拽窗口主容器 */
+        .floating-window {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 1300px;
+            height: 800px;
+            min-width: 600px;
+            min-height: 500px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(4px);
+            border-radius: 28px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .floating-window.fullscreen {
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            border-radius: 0;
+            min-width: auto;
+            min-height: auto;
+        }
+
+        /* 窗口边缘交互区 */
+        .resize-handle-edge {
+            position: absolute;
+            z-index: 1001;
+            background: transparent;
+        }
+        .resize-top, .resize-bottom { left: 8px; right: 8px; height: 12px; cursor: grab; }
+        .resize-left, .resize-right { top: 8px; bottom: 8px; width: 12px; cursor: grab; }
+        .resize-top { top: 0; cursor: grab; }
+        .resize-bottom { bottom: 0; cursor: grab; }
+        .resize-left { left: 0; cursor: grab; }
+        .resize-right { right: 0; cursor: grab; }
+        .resize-tl, .resize-tr, .resize-bl, .resize-br {
+            width: 16px;
+            height: 16px;
+            z-index: 1002;
+        }
+        .resize-tl { top: 0; left: 0; cursor: nw-resize; }
+        .resize-tr { top: 0; right: 0; cursor: ne-resize; }
+        .resize-bl { bottom: 0; left: 0; cursor: sw-resize; }
+        .resize-br { bottom: 0; right: 0; cursor: se-resize; }
+        .fullscreen .resize-handle-edge { display: none; }
+
+        .window-bar {
+            background: rgba(245, 245, 247, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+            cursor: grab;
+        }
+        .window-bar:active { cursor: grabbing; }
+        .window-title { font-weight: 590; font-size: 14px; color: #1c1c1e; display: flex; gap: 8px; }
+        .window-controls { display: flex; gap: 12px; }
+        .window-btn {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 40px;
+        }
+        .window-btn:hover { background: rgba(0, 0, 0, 0.08); }
+
+        .window-content { flex: 1; overflow: hidden; background: #f5f5f7; }
+        .dashboard { display: flex; width: 100%; height: 100%; flex-direction: row; overflow: hidden; }
+        .control-panel {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 24px 22px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            width: 320px;
+            min-width: 220px;
+        }
+        .splitter {
+            width: 6px;
+            background: #d4d4de;
+            cursor: col-resize;
+            flex-shrink: 0;
+        }
+        .splitter:hover { background: #007aff; }
+        .prompter-area {
+            flex: 1;
+            background: #0a0c0e;
+            padding: 24px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 280px;
+            overflow: hidden;
+        }
+        .fullscreen .control-panel, .fullscreen .splitter { display: none; }
+        .fullscreen .prompter-area { flex: 1; width: 100%; }
+
+        .control-card { margin-bottom: 28px; }
+        .card-label { font-size: 12px; font-weight: 600; text-transform: uppercase; color: #5e5e66; margin-bottom: 12px; }
+        .apple-textarea {
+            width: 100%;
+            background: #ffffff;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 18px;
+            padding: 12px 16px;
+            font-family: monospace;
+            font-size: 13px;
+            resize: vertical;
+            user-select: text;
+        }
+        .button-group { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+        .btn {
+            padding: 6px 16px;
+            border-radius: 40px;
+            font-weight: 500;
+            border: none;
+            background: #e8e8ed;
+            cursor: pointer;
+        }
+        .btn-primary { background: #007aff; color: white; }
+        .slider-row { margin: 16px 0; }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .value-with-edit {
+            background: #e8e8ed;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .value-with-edit:hover { background: #d4d4dc; }
+        input[type="range"] { width: 100%; }
+
+        /* 提词器窗口结构：支持可视窗口垂直移动 */
+        .viewport-positioner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            overflow: visible;
+        }
+        .teleprompter-view {
+            background: #030507;
+            border-radius: 24px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+            scroll-behavior: auto;
+            flex-shrink: 0;
+            transition: margin-top 0.05s ease;
+        }
+        .prompter-content {
+            padding: 0 28px;
+        }
+        .prompter-line {
+            color: #f0f0f0;
+            padding: 0.2rem 0;
+            border-bottom: 0.5px solid rgba(120,120,140,0.2);
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-align: left;
+            transition: line-height 0.1s;
+        }
+        .prompter-line.center-align { text-align: center; }
+        
+        /* 装饰渐变 */
+        .mask-decoration {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 40px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.2;
+        }
+        .mask-top-dec { top: 0; background: linear-gradient(to bottom, #000, transparent); }
+        .mask-bottom-dec { bottom: 0; background: linear-gradient(to top, #000, transparent); }
+        .fullscreen .teleprompter-view { border-radius: 0; }
+
+        .status-bar { display: flex; justify-content: space-between; font-size: 11px; color: #aaa; }
+
+        /* 全屏简约控制栏 - 支持换行，控件保持完整 */
+        .compact-controls {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 22, 27, 0.85);
+            backdrop-filter: blur(28px);
+            border-radius: 48px;
+            padding: 10px 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 16px;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            border: 0.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            max-width: 90vw;
+        }
+        .compact-controls.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+            pointer-events: none;
+        }
+        .compact-controls .compact-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: none;
+            color: white;
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .compact-controls .compact-btn:hover { background: #007aff; transform: scale(0.96); }
+        .compact-controls .compact-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 40px;
+            white-space: nowrap;
+        }
+        .compact-controls input[type="range"] { 
+            width: 80px; 
+            background: rgba(255,255,255,0.2); 
+            height: 3px;
+            border-radius: 3px;
+        }
+        .compact-controls input[type="range"]::-webkit-slider-thumb {
+            background: white;
+            width: 12px;
+            height: 12px;
+        }
+        .compact-controls span { font-size: 11px; color: #ddd; margin: 0 2px; }
+        .compact-controls .compact-value {
+            background: rgba(0,0,0,0.5);
+            padding: 2px 6px;
+            border-radius: 20px;
+            font-size: 11px;
+            min-width: 38px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* 快捷键模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal-card {
+            background: #f5f5f7;
+            border-radius: 32px;
+            width: 420px;
+            max-width: 90%;
+            padding: 24px;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.3);
+        }
+        .modal-card h3 { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 8px 0;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+        }
+        .shortcut-label { font-weight: 500; }
+        .shortcut-key {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 6px 14px;
+            min-width: 100px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .shortcut-key.active { background: #007aff; color: white; border-color: #007aff; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+        .btn-modal { padding: 8px 20px; border-radius: 40px; border: none; cursor: pointer; }
+        .btn-primary-modal { background: #007aff; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="floating-window" id="floatingWindow">
+    <!-- 边缘交互 -->
+    <div class="resize-handle-edge resize-top" data-action="move"></div>
+    <div class="resize-handle-edge resize-bottom" data-action="move"></div>
+    <div class="resize-handle-edge resize-left" data-action="move"></div>
+    <div class="resize-handle-edge resize-right" data-action="move"></div>
+    <div class="resize-handle-edge resize-tl" data-action="resize" data-corner="tl"></div>
+    <div class="resize-handle-edge resize-tr" data-action="resize" data-corner="tr"></div>
+    <div class="resize-handle-edge resize-bl" data-action="resize" data-corner="bl"></div>
+    <div class="resize-handle-edge resize-br" data-action="resize" data-corner="br"></div>
+
+    <div class="window-bar" id="windowBar">
+        <div class="window-title">🎙️ Prompt Pro 爆炸点</div>
+        <div class="window-controls">
+            <button class="window-btn" id="fullscreenBtn">⛶</button>
+        </div>
+    </div>
+    <div class="window-content">
+        <div class="dashboard">
+            <div class="control-panel" id="controlPanel">
+                <div class="control-card">
+                    <div class="card-label">📄 脚本编辑器</div>
+                    <textarea id="scriptInput" rows="5" class="apple-textarea" placeholder="输入演讲稿..."></textarea>
+                    <div class="button-group">
+                        <button id="applyTextBtn" class="btn btn-primary">加载到提词器</button>
+                        <button id="resetSampleBtn" class="btn">📋 示例</button>
+                    </div>
+                </div>
+                <div class="control-card">
+                    <div class="card-label">🎬 播放控制</div>
+                    <div class="button-group">
+                        <button id="playBtn" class="btn btn-primary">▶ 开始滚动</button>
+                        <button id="pauseBtn" class="btn">⏸ 暂停</button>
+                        <button id="resetBtn" class="btn">🔄 重置顶部</button>
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>滚动速度</span>
+                            <span id="speedValueDisplay" class="value-with-edit">1.2 px/帧</span>
+                        </div>
+                        <input type="range" id="speedSlider" min="0.3" max="5.5" step="0.05" value="1.2">
+                    </div>
+                </div>
+                <div class="control-card">
+                    <div class="card-label">🔠 视觉调节</div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>字体大小 (最大100px)</span>
+                            <span id="fontSizeDisplay" class="value-with-edit">22px</span>
+                        </div>
+                        <input type="range" id="fontSizeSlider" min="14" max="100" step="1" value="22">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>行距 (倍数)</span>
+                            <span id="lineHeightDisplay" class="value-with-edit">1.48</span>
+                        </div>
+                        <input type="range" id="lineHeightSlider" min="1.0" max="2.5" step="0.02" value="1.48">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>可见行数 (精确裁剪)</span>
+                            <span id="lineCountDisplay" class="value-with-edit">6 行</span>
+                        </div>
+                        <input type="range" id="lineCountSlider" min="1" max="20" step="1" value="6">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>每行最大字数 (最小5)</span>
+                            <span id="maxCharsDisplay" class="value-with-edit">35 字符</span>
+                        </div>
+                        <input type="range" id="maxCharsSlider" min="5" max="100" step="1" value="35">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>📐 可视窗口垂直位置</span>
+                            <span id="windowPosDisplay" class="value-with-edit">0%</span>
+                        </div>
+                        <input type="range" id="windowPosSlider" min="0" max="100" step="1" value="0">
+                        <div class="button-group" style="margin-top: 6px;">
+                            <button id="posUpBtn" class="btn" style="padding: 4px 12px;">▲ 上移</button>
+                            <button id="posDownBtn" class="btn" style="padding: 4px 12px;">▼ 下移</button>
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header"><span>📐 文字对齐</span></div>
+                        <div class="button-group">
+                            <button id="alignLeftBtn" class="btn" style="background:#007aff; color:white;">◀ 左对齐</button>
+                            <button id="alignCenterBtn" class="btn">⏺ 居中对齐</button>
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <div class="button-group">
+                            <button id="customShortcutBtn" class="btn" style="background:#2c6e9e; color:white;">⌨️ 自定义快捷键</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="splitter" id="splitter"></div>
+            <div class="prompter-area">
+                <div style="display: flex; justify-content: space-between;"><span class="card-label" style="color:#ccc;">🎙️ 提词器窗口</span><span style="font-size:12px; color:#aaa;">开始口播吧</span></div>
+                <div class="viewport-positioner" id="viewportPositioner">
+                    <div id="viewport" class="teleprompter-view">
+                        <div id="prompterContent" class="prompter-content"><div class="prompter-line" style="color:#888;">✨ 加载文本开始演讲 ✨</div></div>
+                        <div class="mask-decoration mask-top-dec"></div>
+                        <div class="mask-decoration mask-bottom-dec"></div>
+                    </div>
+                </div>
+                <div class="status-bar"><span id="scrollState">⚪ 暂停</span><span id="positionInfo">顶端</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="shortcutModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>自定义快捷键 (全屏模式)</h3>
+        <div class="shortcut-row"><span class="shortcut-label">播放/暂停</span><div id="shortcutPlayPause" class="shortcut-key" data-action="playpause">Space</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">重置滚动</span><div id="shortcutReset" class="shortcut-key" data-action="reset">R</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">退出全屏</span><div id="shortcutExit" class="shortcut-key" data-action="exit">Escape</div></div>
+        <div class="modal-buttons"><button id="resetShortcutsBtn" class="btn-modal">重置默认</button><button id="closeShortcutModal" class="btn-modal btn-primary-modal">完成</button></div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // DOM 元素
+        const textarea = document.getElementById('scriptInput');
+        const applyBtn = document.getElementById('applyTextBtn');
+        const resetSampleBtn = document.getElementById('resetSampleBtn');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValueDisplay = document.getElementById('speedValueDisplay');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+        const lineHeightSlider = document.getElementById('lineHeightSlider');
+        const lineHeightDisplay = document.getElementById('lineHeightDisplay');
+        const lineCountSlider = document.getElementById('lineCountSlider');
+        const lineCountDisplay = document.getElementById('lineCountDisplay');
+        const maxCharsSlider = document.getElementById('maxCharsSlider');
+        const maxCharsDisplay = document.getElementById('maxCharsDisplay');
+        const windowPosSlider = document.getElementById('windowPosSlider');
+        const windowPosDisplay = document.getElementById('windowPosDisplay');
+        const posUpBtn = document.getElementById('posUpBtn');
+        const posDownBtn = document.getElementById('posDownBtn');
+        const viewport = document.getElementById('viewport');
+        const viewportPositioner = document.getElementById('viewportPositioner');
+        const prompterContent = document.getElementById('prompterContent');
+        const scrollStateSpan = document.getElementById('scrollState');
+        const positionInfoSpan = document.getElementById('positionInfo');
+        const alignLeftBtn = document.getElementById('alignLeftBtn');
+        const alignCenterBtn = document.getElementById('alignCenterBtn');
+
+        // 核心数据
+        let originalRawLines = [];
+        let displayLines = [];
+        let scrollInterval = null;
+        let isScrolling = false;
+        let currentFontSize = 22;
+        let currentLineHeight = 1.48;
+        let currentVisibleLines = 6;
+        let currentMaxChars = 35;
+        let currentAlign = 'left';
+        let currentWindowPosPercent = 0;
+
+        function getLineHeightPx() {
+            return currentFontSize * currentLineHeight;
+        }
+
+        function setViewportHeight() {
+            if (!viewport) return;
+            const lineHeight = getLineHeightPx();
+            const exactHeight = currentVisibleLines * lineHeight;
+            viewport.style.height = `${exactHeight}px`;
+        }
+
+        function updateViewportPosition() {
+            if (!viewportPositioner || !viewport) return;
+            const containerHeight = viewportPositioner.clientHeight;
+            const viewportHeight = viewport.clientHeight;
+            if (containerHeight <= viewportHeight) {
+                viewport.style.marginTop = '0px';
+                return;
+            }
+            const maxMargin = containerHeight - viewportHeight;
+            const marginTop = (currentWindowPosPercent / 100) * maxMargin;
+            viewport.style.marginTop = `${marginTop}px`;
+        }
+
+        function setWindowPosPercent(percent) {
+            percent = Math.min(100, Math.max(0, percent));
+            currentWindowPosPercent = percent;
+            windowPosSlider.value = percent;
+            windowPosDisplay.innerText = `${percent}%`;
+            updateViewportPosition();
+        }
+
+        function shiftWindowPos(deltaPercent) {
+            setWindowPosPercent(currentWindowPosPercent + deltaPercent);
+        }
+
+        function resetScrollToTop() {
+            if (!viewport) return;
+            viewport.scrollTop = 0;
+            updatePositionInfo();
+        }
+
+        function applyLayoutAndReset() {
+            setViewportHeight();
+            resetScrollToTop();
+            updateViewportPosition();
+        }
+
+        function applyAlignmentToLines() {
+            document.querySelectorAll('.prompter-line').forEach(line => {
+                if (currentAlign === 'center') line.classList.add('center-align');
+                else line.classList.remove('center-align');
+            });
+        }
+        function updateAlignButtons() {
+            if (currentAlign === 'left') {
+                alignLeftBtn.style.background = '#007aff'; alignLeftBtn.style.color = 'white';
+                alignCenterBtn.style.background = '#e8e8ed'; alignCenterBtn.style.color = '#1c1c1e';
+            } else {
+                alignCenterBtn.style.background = '#007aff'; alignCenterBtn.style.color = 'white';
+                alignLeftBtn.style.background = '#e8e8ed'; alignLeftBtn.style.color = '#1c1c1e';
+            }
+        }
+        function setAlign(align) { currentAlign = align; applyAlignmentToLines(); updateAlignButtons(); }
+
+        function smartWrapText(text, maxLen) {
+            if (maxLen <= 0) return [text];
+            if (!text || text.length === 0) return [''];
+            if (text.length <= maxLen) return [text];
+            const words = text.split(/(\s+)/);
+            const lines = []; let currentLine = '';
+            for (let token of words) {
+                if (token === '') continue;
+                const testLine = currentLine + token;
+                if ([...testLine].length <= maxLen) currentLine = testLine;
+                else {
+                    if (currentLine.length > 0) lines.push(currentLine);
+                    if ([...token].length > maxLen) {
+                        let remain = token;
+                        while (remain.length > maxLen) { lines.push(remain.slice(0, maxLen)); remain = remain.slice(maxLen); }
+                        currentLine = remain;
+                    } else currentLine = token;
+                }
+            }
+            if (currentLine.length) lines.push(currentLine);
+            return lines.length ? lines : [text];
+        }
+        function generateWrappedLines(rawLines, maxChars) {
+            if (!rawLines) return [];
+            const res = [];
+            for (let p of rawLines) {
+                if (p === '') { res.push(''); continue; }
+                res.push(...smartWrapText(p, maxChars));
+            }
+            return res;
+        }
+
+        function renderPrompter() {
+            prompterContent.innerHTML = '';
+            if (!displayLines.length) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'prompter-line';
+                emptyDiv.innerText = '📭 无内容，请编辑并加载';
+                emptyDiv.style.fontSize = `${currentFontSize}px`;
+                emptyDiv.style.lineHeight = currentLineHeight;
+                prompterContent.appendChild(emptyDiv);
+            } else {
+                displayLines.forEach(line => {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.className = 'prompter-line';
+                    if (line === '') lineDiv.innerHTML = '&nbsp;';
+                    else lineDiv.innerText = line;
+                    lineDiv.style.fontSize = `${currentFontSize}px`;
+                    lineDiv.style.lineHeight = currentLineHeight;
+                    prompterContent.appendChild(lineDiv);
+                });
+            }
+            applyAlignmentToLines();
+            applyLayoutAndReset();
+        }
+
+        function refreshDisplay() {
+            displayLines = originalRawLines ? generateWrappedLines(originalRawLines, currentMaxChars) : [];
+            renderPrompter();
+            stopScrolling(true);
+        }
+
+        function updateOriginalFromTextarea() {
+            originalRawLines = textarea.value.split(/\r?\n/);
+            refreshDisplay();
+        }
+
+        function loadSample() {
+            textarea.value = `欢迎使用 Prompt Pro 爆炸点
+全屏时底部控制栏支持换行，每个控件保持完整。
+行距、字数、可见行数、窗口位置均可自由调节。
+开始口播吧！`;
+            updateOriginalFromTextarea();
+        }
+
+        function stopScrolling(resetFlag = true) {
+            if (scrollInterval) clearInterval(scrollInterval);
+            isScrolling = false;
+            scrollStateSpan.innerText = resetFlag ? '⏹️ 停止' : '⏸ 暂停';
+            if (isFullscreen && compactBar) {
+                compactBar.classList.remove('hidden');
+            }
+        }
+        function startScrolling() {
+            if (scrollInterval) clearInterval(scrollInterval);
+            if (!viewport) return;
+            const maxScroll = viewport.scrollHeight - viewport.clientHeight;
+            if (maxScroll <= 1) { scrollStateSpan.innerText = '⚠️ 内容不足'; return; }
+            if (viewport.scrollTop >= maxScroll - 0.5) { scrollStateSpan.innerText = '📌 已至底部'; return; }
+            isScrolling = true;
+            scrollStateSpan.innerText = '▶ 滚动中';
+            if (isFullscreen && compactBar) {
+                compactBar.classList.add('hidden');
+            }
+            scrollInterval = setInterval(() => {
+                if (!isScrolling || !viewport) return;
+                const speed = parseFloat(speedSlider.value);
+                let newTop = viewport.scrollTop + speed;
+                const maxTop = viewport.scrollHeight - viewport.clientHeight;
+                if (newTop >= maxTop) {
+                    viewport.scrollTop = maxTop;
+                    stopScrolling(true);
+                    scrollStateSpan.innerText = '🏁 到底部';
+                    updatePositionInfo();
+                    return;
+                }
+                viewport.scrollTop = newTop;
+                updatePositionInfo();
+            }, 30);
+        }
+        function resetScroll() {
+            resetScrollToTop();
+            stopScrolling(true);
+            scrollStateSpan.innerText = '🔄 已重置顶部';
+            setTimeout(() => { if (!isScrolling) scrollStateSpan.innerText = '⏸ 暂停'; }, 800);
+        }
+        function togglePlayPause() { if (isScrolling) stopScrolling(true); else startScrolling(); }
+        function updatePositionInfo() {
+            if (!viewport) return;
+            const st = viewport.scrollTop;
+            const maxSt = viewport.scrollHeight - viewport.clientHeight;
+            if (maxSt <= 0) { positionInfoSpan.innerText = `0%`; return; }
+            const percent = (st / maxSt * 100).toFixed(0);
+            positionInfoSpan.innerText = `📍 ${percent}%`;
+        }
+        function onStyleChange() {
+            stopScrolling(true);
+            renderPrompter();
+        }
+
+        // 数值点击编辑
+        function makeEditable(displayElement, currentValue, unit, callback, validator = null) {
+            displayElement.style.cursor = 'pointer';
+            displayElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const oldText = displayElement.innerText;
+                let input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentValue;
+                input.style.width = '70px';
+                input.style.background = 'white';
+                input.style.border = '1px solid #007aff';
+                input.style.borderRadius = '20px';
+                input.style.padding = '2px 8px';
+                input.style.textAlign = 'center';
+                input.style.fontSize = '12px';
+                displayElement.innerText = '';
+                displayElement.appendChild(input);
+                input.focus();
+                input.select();
+
+                function commit() {
+                    let newVal = parseFloat(input.value);
+                    if (isNaN(newVal)) newVal = currentValue;
+                    if (validator) newVal = validator(newVal);
+                    if (unit === 'px/帧') newVal = Math.min(5.5, Math.max(0.3, newVal));
+                    else if (unit === 'px') newVal = Math.min(100, Math.max(14, newVal));
+                    else if (unit === '行') newVal = Math.min(20, Math.max(1, newVal));
+                    else if (unit === '字符') newVal = Math.min(100, Math.max(5, newVal));
+                    else if (unit === '' || unit === '倍数') newVal = Math.min(2.5, Math.max(1.0, newVal));
+                    else if (unit === '%') newVal = Math.min(100, Math.max(0, newVal));
+                    callback(newVal);
+                    displayElement.innerText = `${newVal}${unit ? ' ' + unit : ''}`;
+                    displayElement.removeChild(input);
+                }
+                function onBlur() { commit(); }
+                function onKeydown(e) { if (e.key === 'Enter') { commit(); } else if (e.key === 'Escape') { displayElement.innerText = oldText; displayElement.removeChild(input); } }
+                input.addEventListener('blur', onBlur);
+                input.addEventListener('keydown', onKeydown);
+            });
+        }
+
+        function bindSliderWithDisplay(slider, display, unit, onUpdate) {
+            const updateDisplay = () => { display.innerText = `${slider.value}${unit ? ' ' + unit : ''}`; };
+            slider.addEventListener('input', () => { updateDisplay(); onUpdate(parseFloat(slider.value)); });
+            updateDisplay();
+        }
+
+        bindSliderWithDisplay(speedSlider, speedValueDisplay, 'px/帧', (val) => {});
+        bindSliderWithDisplay(fontSizeSlider, fontSizeDisplay, 'px', (val) => { currentFontSize = val; onStyleChange(); });
+        bindSliderWithDisplay(lineHeightSlider, lineHeightDisplay, '', (val) => { currentLineHeight = val; onStyleChange(); });
+        bindSliderWithDisplay(lineCountSlider, lineCountDisplay, '行', (val) => { currentVisibleLines = val; onStyleChange(); });
+        bindSliderWithDisplay(maxCharsSlider, maxCharsDisplay, '字符', (val) => { currentMaxChars = val; refreshDisplay(); });
+        bindSliderWithDisplay(windowPosSlider, windowPosDisplay, '%', (val) => { setWindowPosPercent(val); });
+
+        makeEditable(speedValueDisplay, parseFloat(speedSlider.value), 'px/帧', (newVal) => { speedSlider.value = newVal; speedValueDisplay.innerText = `${newVal} px/帧`; });
+        makeEditable(fontSizeDisplay, currentFontSize, 'px', (newVal) => { fontSizeSlider.value = newVal; currentFontSize = newVal; onStyleChange(); });
+        makeEditable(lineHeightDisplay, currentLineHeight, '', (newVal) => { lineHeightSlider.value = newVal; currentLineHeight = newVal; onStyleChange(); });
+        makeEditable(lineCountDisplay, currentVisibleLines, '行', (newVal) => { lineCountSlider.value = newVal; currentVisibleLines = newVal; onStyleChange(); });
+        makeEditable(maxCharsDisplay, currentMaxChars, '字符', (newVal) => { maxCharsSlider.value = newVal; currentMaxChars = newVal; refreshDisplay(); });
+        makeEditable(windowPosDisplay, currentWindowPosPercent, '%', (newVal) => { setWindowPosPercent(newVal); });
+
+        posUpBtn.addEventListener('click', () => shiftWindowPos(-5));
+        posDownBtn.addEventListener('click', () => shiftWindowPos(5));
+
+        let resizeObserver = null;
+        function observeResize() {
+            if (resizeObserver) resizeObserver.disconnect();
+            resizeObserver = new ResizeObserver(() => {
+                updateViewportPosition();
+            });
+            resizeObserver.observe(viewportPositioner);
+            resizeObserver.observe(viewport);
+        }
+
+        // 快捷键系统
+        let shortcuts = { playpause: 'Space', reset: 'KeyR', exit: 'Escape' };
+        const defaultShortcuts = { playpause: 'Space', reset: 'KeyR', exit: 'Escape' };
+        function saveShortcuts() { localStorage.setItem('prompter_shortcuts', JSON.stringify(shortcuts)); }
+        function loadShortcuts() { const saved = localStorage.getItem('prompter_shortcuts'); if (saved) try { const parsed = JSON.parse(saved); if (parsed.playpause && parsed.reset && parsed.exit) shortcuts = parsed; } catch(e){} }
+        function getKeyDisplay(code) { if (code === 'Space') return 'Space'; if (code.startsWith('Key')) return code.slice(3); if (code === 'Escape') return 'ESC'; return code; }
+        let isGlobalFullscreen = false;
+        function handleKeydown(e) { if (!isGlobalFullscreen) return; if (e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return; const code = e.code; if (code === shortcuts.playpause) { e.preventDefault(); togglePlayPause(); } else if (code === shortcuts.reset) { e.preventDefault(); resetScroll(); } else if (code === shortcuts.exit) { e.preventDefault(); if (isGlobalFullscreen) toggleFullscreen(); } }
+        document.addEventListener('keydown', handleKeydown);
+
+        const modal = document.getElementById('shortcutModal');
+        const customBtn = document.getElementById('customShortcutBtn');
+        const closeModalBtn = document.getElementById('closeShortcutModal');
+        const resetShortcutsBtn = document.getElementById('resetShortcutsBtn');
+        let activeKeyElement = null;
+        function openModal() { modal.classList.add('active'); }
+        function closeModal() { modal.classList.remove('active'); if (activeKeyElement) activeKeyElement.classList.remove('active'); activeKeyElement = null; }
+        function setupShortcutBinding(element, action) {
+            element.addEventListener('click', () => {
+                if (activeKeyElement) activeKeyElement.classList.remove('active');
+                activeKeyElement = element;
+                element.classList.add('active');
+                const onKey = (event) => {
+                    event.preventDefault();
+                    let code = event.code;
+                    if (code === 'Space') code = 'Space';
+                    if (action === 'playpause') shortcuts.playpause = code;
+                    else if (action === 'reset') shortcuts.reset = code;
+                    else if (action === 'exit') shortcuts.exit = code;
+                    element.innerText = getKeyDisplay(code);
+                    element.classList.remove('active');
+                    activeKeyElement = null;
+                    saveShortcuts();
+                    document.removeEventListener('keydown', onKey);
+                };
+                document.addEventListener('keydown', onKey, { once: true });
+            });
+        }
+        function updateModalDisplay() { document.getElementById('shortcutPlayPause').innerText = getKeyDisplay(shortcuts.playpause); document.getElementById('shortcutReset').innerText = getKeyDisplay(shortcuts.reset); document.getElementById('shortcutExit').innerText = getKeyDisplay(shortcuts.exit); }
+        function resetToDefaultShortcuts() { shortcuts = { ...defaultShortcuts }; saveShortcuts(); updateModalDisplay(); }
+        setupShortcutBinding(document.getElementById('shortcutPlayPause'), 'playpause');
+        setupShortcutBinding(document.getElementById('shortcutReset'), 'reset');
+        setupShortcutBinding(document.getElementById('shortcutExit'), 'exit');
+        customBtn.onclick = openModal;
+        closeModalBtn.onclick = closeModal;
+        resetShortcutsBtn.onclick = resetToDefaultShortcuts;
+
+        // 窗口拖拽/缩放/全屏
+        const win = document.getElementById('floatingWindow');
+        const bar = document.getElementById('windowBar');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        let isMoving = false, moveStartX, moveStartY, moveStartLeft, moveStartTop;
+        function startMoving(e) { if (win.classList.contains('fullscreen')) return; e.preventDefault(); isMoving = true; moveStartX = e.clientX; moveStartY = e.clientY; moveStartLeft = win.offsetLeft; moveStartTop = win.offsetTop; document.addEventListener('mousemove', onMoving); document.addEventListener('mouseup', stopMoving); }
+        function onMoving(e) { if (!isMoving) return; let dx = e.clientX - moveStartX, dy = e.clientY - moveStartY; let newLeft = moveStartLeft + dx, newTop = moveStartTop + dy; const maxX = window.innerWidth - win.offsetWidth, maxY = window.innerHeight - win.offsetHeight; win.style.left = `${Math.min(Math.max(0, newLeft), maxX)}px`; win.style.top = `${Math.min(Math.max(0, newTop), maxY)}px`; }
+        function stopMoving() { isMoving = false; document.removeEventListener('mousemove', onMoving); document.removeEventListener('mouseup', stopMoving); }
+        bar.addEventListener('mousedown', startMoving);
+        document.querySelectorAll('.resize-handle-edge[data-action="move"]').forEach(edge => edge.addEventListener('mousedown', startMoving));
+
+        let isResizing = false, resizeCorner = '', resizeStartX, resizeStartY, startWidth, startHeight, startLeft, startTop;
+        const MIN_W = 600, MIN_H = 500;
+        function startResize(e, corner) { if (win.classList.contains('fullscreen')) return; e.preventDefault(); isResizing = true; resizeCorner = corner; resizeStartX = e.clientX; resizeStartY = e.clientY; startWidth = win.offsetWidth; startHeight = win.offsetHeight; startLeft = win.offsetLeft; startTop = win.offsetTop; document.addEventListener('mousemove', onResizing); document.addEventListener('mouseup', stopResizing); }
+        function onResizing(e) { if (!isResizing) return; let dx = e.clientX - resizeStartX, dy = e.clientY - resizeStartY; let newWidth = startWidth, newHeight = startHeight, newLeft = startLeft, newTop = startTop; if (resizeCorner === 'br') { newWidth = Math.max(MIN_W, startWidth + dx); newHeight = Math.max(MIN_H, startHeight + dy); } else if (resizeCorner === 'bl') { newWidth = Math.max(MIN_W, startWidth - dx); newHeight = Math.max(MIN_H, startHeight + dy); newLeft = startLeft + (startWidth - newWidth); } else if (resizeCorner === 'tr') { newWidth = Math.max(MIN_W, startWidth + dx); newHeight = Math.max(MIN_H, startHeight - dy); newTop = startTop + (startHeight - newHeight); } else if (resizeCorner === 'tl') { newWidth = Math.max(MIN_W, startWidth - dx); newHeight = Math.max(MIN_H, startHeight - dy); newLeft = startLeft + (startWidth - newWidth); newTop = startTop + (startHeight - newHeight); } const maxX = window.innerWidth - newWidth, maxY = window.innerHeight - newHeight; newLeft = Math.min(Math.max(0, newLeft), maxX); newTop = Math.min(Math.max(0, newTop), maxY); win.style.width = `${newWidth}px`; win.style.height = `${newHeight}px`; win.style.left = `${newLeft}px`; win.style.top = `${newTop}px`; updateViewportPosition(); updatePositionInfo(); }
+        function stopResizing() { isResizing = false; document.removeEventListener('mousemove', onResizing); document.removeEventListener('mouseup', stopResizing); }
+        document.querySelector('.resize-tl')?.addEventListener('mousedown', (e) => startResize(e, 'tl'));
+        document.querySelector('.resize-tr')?.addEventListener('mousedown', (e) => startResize(e, 'tr'));
+        document.querySelector('.resize-bl')?.addEventListener('mousedown', (e) => startResize(e, 'bl'));
+        document.querySelector('.resize-br')?.addEventListener('mousedown', (e) => startResize(e, 'br'));
+
+        let isFullscreen = false, savedWindowState = { left: '', top: '', width: '', height: '' }, compactBar = null;
+        function createCompactControls() {
+            if (compactBar) compactBar.remove();
+            const barDiv = document.createElement('div'); barDiv.className = 'compact-controls';
+            barDiv.innerHTML = `
+                <div class="compact-group"><button class="compact-btn" id="compactPlay">▶ 播放</button><button class="compact-btn" id="compactPause">⏸ 暂停</button><button class="compact-btn" id="compactReset">↺ 重置</button></div>
+                <div class="compact-group"><span>速</span><input type="range" id="compactSpeed" min="0.3" max="5.5" step="0.05" value="${speedSlider.value}" style="width:70px"></div>
+                <div class="compact-group"><span>字</span><input type="range" id="compactFontSize" min="14" max="100" step="1" value="${currentFontSize}" style="width:60px"><span id="compactFontVal" class="compact-value">${currentFontSize}</span></div>
+                <div class="compact-group"><span>行距</span><input type="range" id="compactLineHeight" min="1.0" max="2.5" step="0.02" value="${currentLineHeight}" style="width:60px"><span id="compactLineHeightVal" class="compact-value">${currentLineHeight.toFixed(2)}</span></div>
+                <div class="compact-group"><span>行数</span><input type="range" id="compactLineCount" min="1" max="20" step="1" value="${currentVisibleLines}" style="width:60px"><span id="compactLineVal" class="compact-value">${currentVisibleLines}</span></div>
+                <div class="compact-group"><span>字数</span><input type="range" id="compactMaxChars" min="5" max="100" step="1" value="${currentMaxChars}" style="width:60px"><span id="compactMaxCharsVal" class="compact-value">${currentMaxChars}</span></div>
+                <div class="compact-group"><span>窗口</span><input type="range" id="compactWinPos" min="0" max="100" step="1" value="${currentWindowPosPercent}" style="width:60px"><span id="compactWinPosVal" class="compact-value">${currentWindowPosPercent}%</span></div>
+                <div class="compact-group"><button class="compact-btn" id="compactAlignLeft">◀</button><button class="compact-btn" id="compactAlignCenter">⏺</button></div>
+                <button class="compact-btn" id="exitFullscreenBtn">✕ 退出</button>
+            `;
+            document.body.appendChild(barDiv);
+            document.getElementById('compactPlay')?.addEventListener('click', startScrolling);
+            document.getElementById('compactPause')?.addEventListener('click', () => stopScrolling(true));
+            document.getElementById('compactReset')?.addEventListener('click', resetScroll);
+            const compactSpeed = document.getElementById('compactSpeed');
+            if (compactSpeed) compactSpeed.addEventListener('input', (e) => { speedSlider.value = e.target.value; speedValueDisplay.innerText = `${e.target.value} px/帧`; });
+            const compactFont = document.getElementById('compactFontSize');
+            const compactFontVal = document.getElementById('compactFontVal');
+            if (compactFont) compactFont.addEventListener('input', (e) => { let val = parseInt(e.target.value); fontSizeSlider.value = val; currentFontSize = val; fontSizeDisplay.innerText = `${val}px`; onStyleChange(); compactFontVal.innerText = val; });
+            const compactLineHeight = document.getElementById('compactLineHeight');
+            const compactLineHeightVal = document.getElementById('compactLineHeightVal');
+            if (compactLineHeight) compactLineHeight.addEventListener('input', (e) => { let val = parseFloat(e.target.value); lineHeightSlider.value = val; currentLineHeight = val; onStyleChange(); compactLineHeightVal.innerText = val.toFixed(2); });
+            const compactLine = document.getElementById('compactLineCount');
+            const compactLineVal = document.getElementById('compactLineVal');
+            if (compactLine) compactLine.addEventListener('input', (e) => { let val = parseInt(e.target.value); lineCountSlider.value = val; currentVisibleLines = val; onStyleChange(); compactLineVal.innerText = val; lineCountDisplay.innerText = `${val} 行`; });
+            const compactMaxChars = document.getElementById('compactMaxChars');
+            const compactMaxCharsVal = document.getElementById('compactMaxCharsVal');
+            if (compactMaxChars) compactMaxChars.addEventListener('input', (e) => { let val = parseInt(e.target.value); maxCharsSlider.value = val; currentMaxChars = val; refreshDisplay(); compactMaxCharsVal.innerText = val; });
+            const compactWinPos = document.getElementById('compactWinPos');
+            const compactWinPosVal = document.getElementById('compactWinPosVal');
+            if (compactWinPos) {
+                compactWinPos.value = currentWindowPosPercent;
+                compactWinPos.addEventListener('input', (e) => { let val = parseInt(e.target.value); windowPosSlider.value = val; setWindowPosPercent(val); compactWinPosVal.innerText = `${val}%`; });
+            }
+            document.getElementById('compactAlignLeft')?.addEventListener('click', () => setAlign('left'));
+            document.getElementById('compactAlignCenter')?.addEventListener('click', () => setAlign('center'));
+            document.getElementById('exitFullscreenBtn')?.addEventListener('click', toggleFullscreen);
+            return barDiv;
+        }
+        function toggleFullscreen() {
+            if (!isFullscreen) {
+                savedWindowState = { left: win.style.left, top: win.style.top, width: win.style.width, height: win.style.height };
+                win.classList.add('fullscreen');
+                isFullscreen = true; isGlobalFullscreen = true;
+                fullscreenBtn.innerHTML = '🗗';
+                compactBar = createCompactControls();
+                if (!isScrolling && compactBar) compactBar.classList.remove('hidden');
+                setTimeout(() => { updateViewportPosition(); updatePositionInfo(); }, 50);
+            } else {
+                win.classList.remove('fullscreen');
+                isFullscreen = false; isGlobalFullscreen = false;
+                fullscreenBtn.innerHTML = '⛶';
+                if (compactBar) { compactBar.remove(); compactBar = null; }
+                if (savedWindowState.left) { win.style.left = savedWindowState.left; win.style.top = savedWindowState.top; win.style.width = savedWindowState.width; win.style.height = savedWindowState.height; }
+                else { win.style.left = '5%'; win.style.top = '5%'; win.style.width = '1300px'; win.style.height = '800px'; }
+                setTimeout(() => { updateViewportPosition(); updatePositionInfo(); }, 30);
+            }
+        }
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        const controlPanel = document.getElementById('controlPanel');
+        const splitter = document.getElementById('splitter');
+        let isSplitterDrag = false, splitStartX, startLeftWidth;
+        splitter.addEventListener('mousedown', (e) => { if (win.classList.contains('fullscreen')) return; isSplitterDrag = true; splitStartX = e.clientX; startLeftWidth = controlPanel.offsetWidth; document.body.style.cursor = 'col-resize'; const onMove = (e) => { if (!isSplitterDrag) return; let newWidth = startLeftWidth + (e.clientX - splitStartX); controlPanel.style.width = `${Math.min(window.innerWidth*0.65, Math.max(220, newWidth))}px`; updateViewportPosition(); updatePositionInfo(); }; const onUp = () => { isSplitterDrag = false; document.body.style.cursor = ''; document.removeEventListener('mousemove', onMove); }; document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp, { once: true }); e.preventDefault(); });
+
+        applyBtn.onclick = () => { updateOriginalFromTextarea(); stopScrolling(true); scrollStateSpan.innerText = '📥 已加载'; };
+        resetSampleBtn.onclick = () => { loadSample(); stopScrolling(true); };
+        playBtn.onclick = startScrolling; pauseBtn.onclick = () => stopScrolling(true); resetBtn.onclick = resetScroll;
+        alignLeftBtn.onclick = () => setAlign('left'); alignCenterBtn.onclick = () => setAlign('center');
+        viewport.addEventListener('scroll', updatePositionInfo);
+
+        loadShortcuts(); updateModalDisplay();
+        loadSample();
+        observeResize();
+        setTimeout(() => { setViewportHeight(); resetScrollToTop(); updateViewportPosition(); }, 100);
+    })();
+</script>
+</body>
+</html>
