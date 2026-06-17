@@ -1,0 +1,1859 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Prompt Pro 爆炸点 · 全屏沉浸｜左中右对齐</title>
+    <style>
+        :root {
+            --bg-deep: #050508;
+            --bg-surface: #0f0f14;
+            --bg-elevated: #181820;
+            --bg-panel: #14141a;
+            --accent: #D4A85D;
+            --accent-hover: #E0B86E;
+            --accent-red: #C44B4B;
+            --accent-red-hover: #D45555;
+            --accent-glow: rgba(212, 168, 93, 0.35);
+            --accent-subtle: rgba(212, 168, 93, 0.12);
+            --text-primary: #FFFFFF;
+            --text-secondary: #C5C2CC;
+            --text-muted: #7E788A;
+            --border: rgba(255, 255, 255, 0.11);
+            --border-light: rgba(255, 255, 255, 0.06);
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            /* 组件级变量 */
+            --textarea-bg: #0e0e12;
+            --textarea-border: rgba(255,255,255,0.11);
+            --btn-bg: rgba(255,255,255,0.06);
+            --btn-border: rgba(255,255,255,0.13);
+            --btn-hover-bg: rgba(255,255,255,0.11);
+            --btn-hover-border: rgba(255,255,255,0.20);
+            --btn-primary-text: #0c0a06;
+            --compact-bg: rgba(12,12,18,0.95);
+            --compact-border: rgba(255,255,255,0.10);
+            --compact-btn-bg: rgba(255,255,255,0.07);
+            --compact-btn-border: rgba(255,255,255,0.10);
+            --card-shadow: 0 4px 14px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+            --prompter-border: rgba(255,255,255,0.10);
+            --prompter-shadow: inset 0 0 60px rgba(212,168,93,0.025), 0 4px 16px rgba(0,0,0,0.45);
+            --modal-overlay: rgba(0,0,0,0.7);
+            --modal-border: rgba(255,255,255,0.12);
+            --modal-shadow: 0 24px 48px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
+            --shortcut-border: rgba(255,255,255,0.13);
+            --slider-track: rgba(255,255,255,0.10);
+            --slider-thumb-glow: rgba(212,168,93,0.45);
+            --value-bg: rgba(212,168,93,0.12);
+            --value-border: rgba(212,168,93,0.22);
+            --value-hover-bg: rgba(212,168,93,0.20);
+            --window-bar-shadow: 0 1px 6px rgba(0,0,0,0.35);
+            --split-line: rgba(255,255,255,0.04);
+        }
+
+        /* ===== 白天模式 ===== */
+        [data-theme="light"] {
+            --bg-deep: #F5F3EE;
+            --bg-surface: #EBE8E2;
+            --bg-elevated: #FFFFFF;
+            --bg-panel: #FAFAF8;
+            --accent: #8B6914;
+            --accent-hover: #A07D24;
+            --accent-red: #C44B4B;
+            --accent-red-hover: #D45555;
+            --accent-glow: rgba(139,105,20,0.22);
+            --accent-subtle: rgba(139,105,20,0.08);
+            --text-primary: #1C1A1E;
+            --text-secondary: #3A3644;
+            --text-muted: #5E5868;
+            --border: rgba(0,0,0,0.10);
+            --border-light: rgba(0,0,0,0.05);
+            --textarea-bg: #F0EDE7;
+            --textarea-border: rgba(0,0,0,0.12);
+            --btn-bg: rgba(0,0,0,0.04);
+            --btn-border: rgba(0,0,0,0.12);
+            --btn-hover-bg: rgba(0,0,0,0.08);
+            --btn-hover-border: rgba(0,0,0,0.18);
+            --btn-primary-text: #FFFFFF;
+            --compact-bg: rgba(245,243,238,0.96);
+            --compact-border: rgba(0,0,0,0.10);
+            --compact-btn-bg: rgba(0,0,0,0.04);
+            --compact-btn-border: rgba(0,0,0,0.08);
+            --card-shadow: 0 2px 10px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+            --prompter-border: rgba(0,0,0,0.10);
+            --prompter-shadow: inset 0 0 40px rgba(139,105,20,0.015), 0 2px 8px rgba(0,0,0,0.06);
+            --modal-overlay: rgba(0,0,0,0.35);
+            --modal-border: rgba(0,0,0,0.10);
+            --modal-shadow: 0 16px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+            --shortcut-border: rgba(0,0,0,0.10);
+            --slider-track: rgba(0,0,0,0.10);
+            --slider-thumb-glow: rgba(139,105,20,0.30);
+            --value-bg: rgba(139,105,20,0.08);
+            --value-border: rgba(139,105,20,0.15);
+            --value-hover-bg: rgba(139,105,20,0.14);
+            --window-bar-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            --split-line: rgba(0,0,0,0.03);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: var(--bg-deep);
+            overflow: hidden;
+            font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            color: var(--text-primary);
+        }
+
+        .app-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-deep);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        /* 全屏时隐藏顶部栏和左侧面板 */
+        .app-container:fullscreen {
+            background: var(--bg-deep);
+        }
+        .app-container:fullscreen .window-bar,
+        .app-container:fullscreen .control-panel,
+        .app-container:fullscreen .splitter {
+            display: none;
+        }
+        .app-container:fullscreen .prompter-area {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+        }
+
+        .window-bar {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: var(--window-bar-shadow);
+        }
+        .window-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+        .window-title .brand-dot {
+            color: var(--accent);
+            font-size: 18px;
+            line-height: 1;
+        }
+        .window-controls { display: flex; gap: 10px; }
+        .window-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .window-btn:hover { background: var(--accent); color: var(--btn-primary-text); border-color: var(--accent); }
+
+        .window-content {
+            flex: 1;
+            overflow: hidden;
+            background: var(--bg-deep);
+        }
+        .dashboard {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            flex-direction: row;
+            overflow: hidden;
+        }
+        .control-panel {
+            background: var(--bg-deep);
+            padding: 20px 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            width: 320px;
+            min-width: 220px;
+            border-right: 1px solid var(--border);
+        }
+        .splitter {
+            width: 4px;
+            background: var(--border);
+            cursor: col-resize;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+        .splitter:hover { background: var(--accent); }
+        .prompter-area {
+            flex: 1;
+            background: var(--bg-deep);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 280px;
+            overflow: hidden;
+            transition: gap 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .prompter-area.scrolling {
+            gap: 0;
+        }
+
+        .control-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: var(--card-shadow);
+        }
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-label::before {
+            content: '';
+            width: 3px; height: 14px;
+            background: var(--accent);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .apple-textarea {
+            width: 100%;
+            background: var(--textarea-bg);
+            border: 1.5px solid var(--textarea-border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            resize: vertical;
+            user-select: text;
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            line-height: 1.6;
+        }
+        .apple-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-subtle);
+        }
+        .apple-textarea { position: relative; z-index: 1; }
+        .apple-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-subtle);
+        }
+        .apple-textarea::placeholder { color: var(--text-muted); }
+        [data-theme="light"] .apple-textarea::placeholder { color: #A09AAC; }
+
+        /* 拖拽上传容器 */
+        .textarea-wrapper {
+            position: relative;
+            border-radius: var(--radius-sm);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .textarea-wrapper.drag-over {
+            box-shadow: 0 0 0 2px var(--accent), 0 0 30px rgba(212,168,93,0.20), inset 0 0 40px rgba(212,168,93,0.10);
+            border-radius: var(--radius-sm);
+        }
+        .textarea-wrapper.drag-over .apple-textarea {
+            background: rgba(14,14,18,0.55);
+            backdrop-filter: blur(12px) saturate(1.4);
+            -webkit-backdrop-filter: blur(12px) saturate(1.4);
+            border-color: var(--accent);
+            box-shadow: none;
+            color: transparent;
+        }
+        [data-theme="light"] .textarea-wrapper.drag-over .apple-textarea {
+            background: rgba(240,237,231,0.50);
+            backdrop-filter: blur(12px) saturate(1.4);
+            -webkit-backdrop-filter: blur(12px) saturate(1.4);
+        }
+
+        /* 拖拽覆盖提示层 */
+        .drag-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: var(--radius-sm);
+            pointer-events: none;
+            opacity: 0;
+            transform: scale(0.92);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+        }
+        .textarea-wrapper.drag-over .drag-overlay {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .drag-icon {
+            font-size: 36px;
+            line-height: 1;
+            filter: drop-shadow(0 2px 8px rgba(212,168,93,0.35));
+        }
+        .drag-hint {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+        .drag-formats {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .button-group { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .btn {
+            padding: 7px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid var(--btn-border);
+            background: var(--btn-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover {
+            background: var(--btn-hover-bg);
+            color: var(--text-primary);
+            border-color: var(--btn-hover-border);
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: var(--btn-primary-text);
+            border-color: transparent;
+            font-weight: 700;
+            box-shadow: 0 2px 14px var(--accent-glow);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .slider-row { margin: 12px 0; }
+        .slider-row:first-child { margin-top: 4px; }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .value-with-edit {
+            background: var(--value-bg);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.15s;
+            border: 1px solid var(--value-border);
+            font-variant-numeric: tabular-nums;
+        }
+        .value-with-edit:hover { background: var(--value-hover-bg); border-color: var(--accent-hover); }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            background: var(--slider-track);
+            height: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            background: var(--accent);
+            border: 2px solid var(--bg-elevated);
+            width: 17px; height: 17px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--slider-thumb-glow);
+        }
+
+        /* 提词器窗口 */
+        .viewport-positioner {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+        .teleprompter-view {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            overflow-y: auto;
+            border: 1px solid var(--prompter-border);
+            box-shadow: var(--prompter-shadow);
+            scroll-behavior: auto;
+            flex-shrink: 0;
+            transition: margin-top 0.05s ease, margin-left 0.05s ease, width 0.15s ease;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .teleprompter-view::-webkit-scrollbar {
+            display: none;
+        }
+        .prompter-content {
+            padding: 0 28px;
+        }
+        .prompter-line {
+            color: var(--text-primary);
+            padding: 0.2rem 0;
+            border-bottom: 1px solid var(--split-line);
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-align: justify;
+            text-justify: inter-character;
+            transition: line-height 0.1s;
+        }
+        .prompter-content.mirrored {
+            transform: scaleX(-1);
+        }
+
+        .mask-decoration {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 40px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.3;
+        }
+        .mask-top-dec { top: 0; background: linear-gradient(to bottom, var(--bg-deep), transparent); }
+        .mask-bottom-dec { bottom: 0; background: linear-gradient(to top, var(--bg-deep), transparent); }
+
+        /* 播放时隐藏纯净模式 */
+        .prompter-area.scrolling {
+            gap: 0;
+        }
+
+        /* 全屏底部控制栏 */
+        .compact-controls {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--compact-bg);
+            backdrop-filter: blur(40px) saturate(1.8);
+            border-radius: 16px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+            border: 1px solid var(--compact-border);
+            box-shadow: 0 6px 36px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+            transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 94vw;
+            overflow: hidden;
+        }
+        .compact-controls.hidden {
+            opacity: 0;
+            transform: translateX(-50%) translateY(14px);
+            pointer-events: none;
+        }
+        .compact-controls .compact-primary {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+        }
+        .compact-controls .compact-expanded {
+            display: none;
+            padding: 8px 12px 12px;
+            gap: 8px 14px;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        .compact-controls .compact-expanded.show { display: flex; }
+        .compact-controls .compact-btn {
+            background: var(--compact-btn-bg);
+            border: 1px solid var(--compact-btn-border);
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: 600;
+            white-space: nowrap;
+            line-height: 1.2;
+        }
+        .compact-controls .compact-btn:hover { background: var(--accent); color: var(--btn-primary-text); border-color: var(--accent); }
+        .compact-controls .compact-btn.active { background: var(--accent); color: var(--btn-primary-text); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        .compact-controls .compact-sep {
+            width: 1px; height: 20px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+        .compact-controls .compact-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .compact-controls span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        [data-theme="light"] .compact-controls span { color: #5E5868; }
+        [data-theme="light"] .compact-controls .compact-value { color: var(--accent); }
+        .compact-controls input[type="range"] {
+            width: 68px;
+            accent-color: var(--accent);
+            height: 3px;
+        }
+        .compact-controls .compact-value {
+            font-size: 11px;
+            color: var(--accent);
+            min-width: 24px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-overlay);
+            backdrop-filter: blur(12px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--modal-border);
+            border-radius: var(--radius-lg);
+            width: 420px;
+            max-width: 90%;
+            padding: 24px;
+            box-shadow: var(--modal-shadow);
+        }
+        .modal-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); }
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .shortcut-label { font-weight: 500; color: var(--text-secondary); }
+        .shortcut-key {
+            background: var(--bg-elevated);
+            border: 1px solid var(--shortcut-border);
+            border-radius: var(--radius-sm);
+            padding: 6px 14px;
+            min-width: 100px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-primary);
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .shortcut-key:hover { border-color: var(--accent); }
+        .shortcut-key.active { background: var(--accent); color: var(--btn-primary-text); border-color: var(--accent); }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .btn-modal { padding: 8px 18px; border-radius: var(--radius-sm); border: 1px solid var(--btn-border); cursor: pointer; background: var(--bg-elevated); color: var(--text-secondary); font-weight: 600; transition: all 0.15s; }
+        .btn-modal:hover { background: var(--bg-surface); color: var(--text-primary); border-color: var(--btn-hover-border); }
+        .btn-primary-modal { background: var(--accent); color: var(--btn-primary-text); border-color: transparent; }
+        .btn-primary-modal:hover { background: var(--accent-hover); }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="appContainer">
+    <div class="window-bar">
+        <div class="window-title"><span class="brand-dot">●</span> Prompt Pro 爆炸点</div>
+        <div class="window-controls">
+            <button class="window-btn" id="themeToggleBtn" title="切换白天/夜晚模式">🌙</button>
+            <button class="window-btn" id="fullscreenBtn">⛶</button>
+        </div>
+    </div>
+    <div class="window-content">
+        <div class="dashboard">
+            <div class="control-panel" id="controlPanel">
+                <div class="control-card">
+                    <div class="card-label">脚本编辑器</div>
+                    <div class="textarea-wrapper" id="textareaWrapper">
+                        <textarea id="scriptInput" rows="5" class="apple-textarea" placeholder="输入演讲稿... 或拖拽文件到此处"></textarea>
+                        <div class="drag-overlay" id="dragOverlay">
+                            <div class="drag-icon">📄</div>
+                            <div class="drag-hint">释放以上传文件</div>
+                            <div class="drag-formats">.txt &nbsp;·&nbsp; .md &nbsp;·&nbsp; .docx</div>
+                        </div>
+                    </div>
+                    <input type="file" id="fileUploadInput" accept=".txt,.md,.text,.markdown,.docx" style="display:none">
+                    <div class="button-group">
+                        <button id="applyTextBtn" class="btn btn-primary">应用</button>
+                        <button id="resetSampleBtn" class="btn">📋 示例</button>
+                        <button id="uploadFileBtn" class="btn">📁 上传</button>
+                    </div>
+                </div>
+                <div class="control-card">
+                    <div class="card-label">播放控制</div>
+                    <div class="button-group">
+                        <button id="playBtn" class="btn btn-primary">▶ 开始滚动</button>
+                        <button id="pauseBtn" class="btn">⏸ 暂停</button>
+                        <button id="resetBtn" class="btn">🔄 重置顶部</button>
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>滚动速度</span>
+                            <span id="speedValueDisplay" class="value-with-edit">1.2 px/帧</span>
+                        </div>
+                        <input type="range" id="speedSlider" min="0.3" max="5.5" step="0.05" value="1.2">
+                    </div>
+                </div>
+                <div class="control-card">
+                    <div class="card-label">视觉调节</div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>字体大小 (最大100px)</span>
+                            <span id="fontSizeDisplay" class="value-with-edit">22px</span>
+                        </div>
+                        <input type="range" id="fontSizeSlider" min="14" max="100" step="1" value="22">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>行距 (倍数)</span>
+                            <span id="lineHeightDisplay" class="value-with-edit">1.48</span>
+                        </div>
+                        <input type="range" id="lineHeightSlider" min="1.0" max="2.5" step="0.02" value="1.48">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>可见行数 (精确裁剪)</span>
+                            <span id="lineCountDisplay" class="value-with-edit">6 行</span>
+                        </div>
+                        <input type="range" id="lineCountSlider" min="1" max="20" step="1" value="6">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>📐 可视窗口垂直位置</span>
+                            <span id="windowPosDisplay" class="value-with-edit">0%</span>
+                        </div>
+                        <input type="range" id="windowPosSlider" min="0" max="100" step="1" value="0">
+                        <div class="button-group" style="margin-top: 6px;">
+                            <button id="posUpBtn" class="btn" style="padding: 4px 12px;">▲ 上移</button>
+                            <button id="posDownBtn" class="btn" style="padding: 4px 12px;">▼ 下移</button>
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>📐 窗口宽度</span>
+                            <span id="vWidthDisplay" class="value-with-edit">100%</span>
+                        </div>
+                        <input type="range" id="vWidthSlider" min="40" max="100" step="1" value="100">
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <span>↔ 水平位置</span>
+                            <span id="hPosDisplay" class="value-with-edit">50%</span>
+                        </div>
+                        <input type="range" id="hPosSlider" min="0" max="100" step="1" value="50">
+                        <div class="button-group" style="margin-top: 6px;">
+                            <button id="hPosLeftBtn" class="btn" style="padding: 4px 12px;">◀ 左</button>
+                            <button id="hPosRightBtn" class="btn" style="padding: 4px 12px;">▶ 右</button>
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <div class="slider-header"><span>🪞 镜像模式</span></div>
+                        <div class="button-group">
+                            <button id="mirrorBtn" class="btn">🪞 关闭</button>
+                        </div>
+                    </div>
+                    <div class="slider-row">
+                        <div class="button-group">
+                            <button id="customShortcutBtn" class="btn btn-primary">⌨️ 自定义快捷键</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="splitter" id="splitter"></div>
+            <div class="prompter-area">
+                <div class="viewport-positioner" id="viewportPositioner">
+                    <div id="viewport" class="teleprompter-view">
+                        <div id="prompterContent" class="prompter-content"><div class="prompter-line" style="color:var(--text-muted);">✨ 加载文本开始演讲 ✨</div></div>
+                        <div class="mask-decoration mask-top-dec"></div>
+                        <div class="mask-decoration mask-bottom-dec"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="shortcutModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>自定义快捷键 (全屏模式)</h3>
+        <div class="shortcut-row"><span class="shortcut-label">播放/暂停</span><div id="shortcutPlayPause" class="shortcut-key" data-action="playpause">Space</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">重置滚动</span><div id="shortcutReset" class="shortcut-key" data-action="reset">R</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">退出全屏</span><div id="shortcutExit" class="shortcut-key" data-action="exit">Escape</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">向上滚一行</span><div id="shortcutScrollUp" class="shortcut-key" data-action="scrollup">↑</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">向下滚一行</span><div id="shortcutScrollDown" class="shortcut-key" data-action="scrolldown">↓</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">镜像开关</span><div id="shortcutMirror" class="shortcut-key" data-action="mirror">M</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">加速</span><div id="shortcutSpeedUp" class="shortcut-key" data-action="speedup">=</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">减速</span><div id="shortcutSpeedDown" class="shortcut-key" data-action="speeddown">-</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">字号放大</span><div id="shortcutFontUp" class="shortcut-key" data-action="fontup">]</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">字号缩小</span><div id="shortcutFontDown" class="shortcut-key" data-action="fontdown">[</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">主题切换</span><div id="shortcutTheme" class="shortcut-key" data-action="theme">T</div></div>
+        <div class="shortcut-row"><span class="shortcut-label">对齐循环</span><div id="shortcutAlign" class="shortcut-key" data-action="align">A</div></div>
+        <div class="modal-buttons"><button id="resetShortcutsBtn" class="btn-modal">重置默认</button><button id="closeShortcutModal" class="btn-modal btn-primary-modal">完成</button></div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // DOM 元素
+        const textarea = document.getElementById('scriptInput');
+        const applyBtn = document.getElementById('applyTextBtn');
+        const resetSampleBtn = document.getElementById('resetSampleBtn');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValueDisplay = document.getElementById('speedValueDisplay');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+        const lineHeightSlider = document.getElementById('lineHeightSlider');
+        const lineHeightDisplay = document.getElementById('lineHeightDisplay');
+        const lineCountSlider = document.getElementById('lineCountSlider');
+        const lineCountDisplay = document.getElementById('lineCountDisplay');
+        const windowPosSlider = document.getElementById('windowPosSlider');
+        const windowPosDisplay = document.getElementById('windowPosDisplay');
+        const posUpBtn = document.getElementById('posUpBtn');
+        const posDownBtn = document.getElementById('posDownBtn');
+        const viewport = document.getElementById('viewport');
+        const viewportPositioner = document.getElementById('viewportPositioner');
+        const prompterContent = document.getElementById('prompterContent');
+        const scrollStateSpan = document.getElementById('scrollState');
+        const positionInfoSpan = document.getElementById('positionInfo');
+        const vWidthSlider = document.getElementById('vWidthSlider');
+        const vWidthDisplay = document.getElementById('vWidthDisplay');
+        const hPosSlider = document.getElementById('hPosSlider');
+        const hPosDisplay = document.getElementById('hPosDisplay');
+        const hPosLeftBtn = document.getElementById('hPosLeftBtn');
+        const hPosRightBtn = document.getElementById('hPosRightBtn');
+        const appContainer = document.getElementById('appContainer');
+        const prompterArea = document.querySelector('.prompter-area');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+        // 主题切换
+        let currentTheme = localStorage.getItem('prompter_theme') || 'dark';
+        function applyTheme(theme) {
+            currentTheme = theme;
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeToggleBtn.textContent = '☀️';
+                themeToggleBtn.title = '切换到夜晚模式';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggleBtn.textContent = '🌙';
+                themeToggleBtn.title = '切换到白天模式';
+            }
+            localStorage.setItem('prompter_theme', theme);
+            // 全屏时重建控制栏以适配新主题
+            if (document.fullscreenElement && compactBar) {
+                destroyCompactControls();
+                createCompactControls();
+            }
+        }
+        applyTheme(currentTheme);
+        themeToggleBtn.addEventListener('click', () => {
+            applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // 核心数据
+        let originalRawLines = [];
+        let displayLines = [];
+        let scrollInterval = null;
+        let isScrolling = false;
+        let currentFontSize = 22;
+        let currentLineHeight = 1.48;
+        let currentVisibleLines = 6;
+        let currentAlign = 'center';
+        let currentWindowPosPercent = 0;
+        let currentViewportWidthPercent = 100;
+        let currentHWindowPosPercent = 50;
+        let compactBar = null;
+
+        function getLineHeightPx() {
+            return currentFontSize * currentLineHeight;
+        }
+
+        function setViewportHeight() {
+            if (!viewport) return;
+            const lineHeight = getLineHeightPx();
+            const exactHeight = currentVisibleLines * lineHeight;
+            viewport.style.height = `${exactHeight}px`;
+        }
+
+        function updateViewportPosition() {
+            if (!viewportPositioner || !viewport) return;
+            const containerHeight = viewportPositioner.clientHeight;
+            const viewportHeight = viewport.clientHeight;
+            if (containerHeight <= viewportHeight) {
+                viewport.style.marginTop = '0px';
+                return;
+            }
+            const maxMargin = containerHeight - viewportHeight;
+            const marginTop = (currentWindowPosPercent / 100) * maxMargin;
+            viewport.style.marginTop = `${marginTop}px`;
+        }
+
+        function setWindowPosPercent(percent) {
+            percent = Math.min(100, Math.max(0, percent));
+            currentWindowPosPercent = percent;
+            windowPosSlider.value = percent;
+            windowPosDisplay.innerText = `${percent}%`;
+            updateViewportPosition();
+        }
+
+        function shiftWindowPos(deltaPercent) {
+            setWindowPosPercent(currentWindowPosPercent + deltaPercent);
+        }
+
+        function resetScrollToTop() {
+            if (!viewport) return;
+            viewport.scrollTop = 0;
+            updatePositionInfo();
+        }
+
+        function applyLayoutAndReset() {
+            setViewportHeight();
+            resetScrollToTop();
+            updateViewportPosition();
+        }
+
+        function setViewportWidth() {
+            if (!viewport || !viewportPositioner) return;
+            const containerW = viewportPositioner.clientWidth;
+            const widthPx = (currentViewportWidthPercent / 100) * containerW;
+            viewport.style.width = `${widthPx}px`;
+        }
+
+        function updateViewportHPosition() {
+            if (!viewportPositioner || !viewport) return;
+            const containerW = viewportPositioner.clientWidth;
+            const viewportW = viewport.clientWidth;
+            if (containerW <= viewportW || containerW === 0) {
+                viewport.style.marginLeft = '0px';
+                return;
+            }
+            // hWindowPosPercent: 0=最左, 50=居中, 100=最右
+            const maxML = containerW - viewportW;
+            const mL = (currentHWindowPosPercent / 100) * maxML;
+            viewport.style.marginLeft = `${mL}px`;
+        }
+
+        function setViewportWidthPercent(percent) {
+            percent = Math.min(100, Math.max(40, percent));
+            currentViewportWidthPercent = percent;
+            vWidthSlider.value = percent;
+            vWidthDisplay.innerText = `${percent}%`;
+            setViewportWidth();
+            updateViewportHPosition();
+        }
+        function setHWindowPosPercent(percent) {
+            percent = Math.min(100, Math.max(0, percent));
+            currentHWindowPosPercent = percent;
+            hPosSlider.value = percent;
+            hPosDisplay.innerText = `${percent}%`;
+            updateViewportHPosition();
+        }
+        function shiftHWindowPos(delta) {
+            setHWindowPosPercent(currentHWindowPosPercent + delta);
+        }
+
+        function renderPrompter() {
+            prompterContent.innerHTML = '';
+            if (!displayLines.length) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.className = 'prompter-line';
+                emptyDiv.innerText = '📭 无内容，请编辑并加载';
+                emptyDiv.style.color = 'var(--text-muted)';
+                emptyDiv.style.fontSize = `${currentFontSize}px`;
+                emptyDiv.style.lineHeight = currentLineHeight;
+                prompterContent.appendChild(emptyDiv);
+            } else {
+                displayLines.forEach(line => {
+                    const lineDiv = document.createElement('div');
+                    lineDiv.className = 'prompter-line';
+                    if (line === '') lineDiv.innerHTML = '&nbsp;';
+                    else lineDiv.innerText = line;
+                    lineDiv.style.fontSize = `${currentFontSize}px`;
+                    lineDiv.style.lineHeight = currentLineHeight;
+                    prompterContent.appendChild(lineDiv);
+                });
+            }
+            applyLayoutAndReset();
+        }
+
+        function refreshDisplay() {
+            displayLines = originalRawLines ? [...originalRawLines] : [];
+            renderPrompter();
+            stopScrolling(true);
+        }
+
+        function updateOriginalFromTextarea() {
+            originalRawLines = textarea.value.split(/\r?\n/);
+            refreshDisplay();
+        }
+
+function loadSample() {
+    textarea.value = `━━━ Prompt Pro 爆炸点 · 使用说明 ━━━
+
+【基本操作】
+  左侧输入或粘贴你的口播脚本 → 点击「应用」→ 右侧预览
+  拖动中间分割条可调整左右面板宽度
+
+【播放控制】
+  ▶ 播放 / ⏸ 暂停 / ↺ 重置（回到顶部）
+  滚动时所有 UI 自动隐藏，纯净模式专注口播
+
+【视觉调节】
+  字号、行距、可见行数均可自由调节
+  窗口垂直位置：控制提词器在屏幕中的上下位置
+  对齐方式：左对齐 / 居中 / 右对齐
+  镜像模式：开启后文字水平翻转，适配反射玻璃提词
+
+【全屏模式】
+  点击全屏按钮进入沉浸式口播
+  底部控制栏：鼠标移到底部区域自动显示，播放时自动隐藏
+  全屏下支持 12 个可自定义快捷键（点击「自定义快捷键」设置）
+
+【快捷键一览（默认）】
+  Space   播放/暂停      M    镜像开关
+  R       重置滚动       = / -  加速/减速
+  ESC     退出全屏       ] / [  字号放大/缩小
+  ↑ / ↓   上/下滚一行    T    暗/亮主题切换
+                         A    对齐循环(左→中→右)
+
+【主题切换】
+  顶部栏 ☀/🌙 按钮一键切换暗色/亮色主题
+
+━━ 准备好就点「应用」，开始你的口播吧 ━─`;
+    updateOriginalFromTextarea();
+}
+
+        function updateCompactPlayPauseBtn() {
+            const btn = document.getElementById('compactPlayPause');
+            if (!btn) return;
+            btn.textContent = isScrolling ? '⏸ 暂停' : '▶ 播放';
+            if (isScrolling) btn.classList.add('active'); else btn.classList.remove('active');
+        }
+
+        function stopScrolling(resetFlag = true) {
+            if (scrollInterval) clearInterval(scrollInterval);
+            isScrolling = false;
+            if (scrollStateSpan) scrollStateSpan.innerText = resetFlag ? '⏹️ 停止' : '⏸ 暂停';
+            if (prompterArea) prompterArea.classList.remove('scrolling');
+            updateCompactPlayPauseBtn();
+            if (document.fullscreenElement && compactBar) {
+                compactBar.classList.remove('hidden');
+            }
+        }
+        function startScrolling() {
+            if (scrollInterval) clearInterval(scrollInterval);
+            if (!viewport) return;
+            const maxScroll = viewport.scrollHeight - viewport.clientHeight;
+            if (maxScroll <= 1) { if (scrollStateSpan) scrollStateSpan.innerText = '⚠️ 内容不足'; return; }
+            if (viewport.scrollTop >= maxScroll - 0.5) { if (scrollStateSpan) scrollStateSpan.innerText = '📌 已至底部'; return; }
+            isScrolling = true;
+            if (scrollStateSpan) scrollStateSpan.innerText = '▶ 滚动中';
+            if (prompterArea) prompterArea.classList.add('scrolling');
+            updateCompactPlayPauseBtn();
+            if (document.fullscreenElement && compactBar) {
+                compactBar.classList.add('hidden');
+            }
+            scrollInterval = setInterval(() => {
+                if (!isScrolling || !viewport) return;
+                const speed = parseFloat(speedSlider.value);
+                let newTop = viewport.scrollTop + speed;
+                const maxTop = viewport.scrollHeight - viewport.clientHeight;
+                if (newTop >= maxTop) {
+                    viewport.scrollTop = maxTop;
+                    stopScrolling(true);
+                    if (scrollStateSpan) scrollStateSpan.innerText = '🏁 到底部';
+                    updatePositionInfo();
+                    return;
+                }
+                viewport.scrollTop = newTop;
+                updatePositionInfo();
+            }, 30);
+        }
+        function resetScroll() {
+            resetScrollToTop();
+            stopScrolling(true);
+            if (scrollStateSpan) scrollStateSpan.innerText = '🔄 已重置顶部';
+            updateCompactPlayPauseBtn();
+            setTimeout(() => { if (!isScrolling && scrollStateSpan) scrollStateSpan.innerText = '⏸ 暂停'; }, 800);
+        }
+        function togglePlayPause() { if (isScrolling) stopScrolling(true); else startScrolling(); }
+        function updatePositionInfo() {
+            if (!viewport || !positionInfoSpan) return;
+            const st = viewport.scrollTop;
+            const maxSt = viewport.scrollHeight - viewport.clientHeight;
+            if (maxSt <= 0) { positionInfoSpan.innerText = `0%`; return; }
+            const percent = (st / maxSt * 100).toFixed(0);
+            positionInfoSpan.innerText = `📍 ${percent}%`;
+        }
+        function onStyleChange() {
+            stopScrolling(true);
+            renderPrompter();
+        }
+
+        // 快捷键辅助函数
+        function adjustSpeed(delta) {
+            let val = parseFloat(speedSlider.value) + delta;
+            val = Math.max(0.3, Math.min(5.5, parseFloat(val.toFixed(2))));
+            speedSlider.value = val;
+            speedValueDisplay.innerText = `${val} px/帧`;
+            const compactSpeed = document.getElementById('compactSpeed');
+            const compactSpeedVal = document.getElementById('compactSpeedVal');
+            if (compactSpeed) compactSpeed.value = val;
+            if (compactSpeedVal) compactSpeedVal.textContent = val.toFixed(1);
+        }
+        function adjustFontSize(delta) {
+            let val = currentFontSize + delta;
+            val = Math.max(14, Math.min(100, val));
+            currentFontSize = val;
+            fontSizeSlider.value = val;
+            fontSizeDisplay.innerText = `${val}px`;
+            const compactFont = document.getElementById('compactFontSize');
+            const compactFontVal = document.getElementById('compactFontVal');
+            if (compactFont) compactFont.value = val;
+            if (compactFontVal) compactFontVal.textContent = val;
+            onStyleChange();
+        }
+        function cycleAlign() {
+            // deprecated - kept for shortcut compat, no-op
+        }
+
+        // 数值点击编辑
+        function makeEditable(displayElement, currentValue, unit, callback, validator = null) {
+            displayElement.style.cursor = 'pointer';
+            displayElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const oldText = displayElement.innerText;
+                let input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentValue;
+                input.style.width = '70px';
+                input.style.background = 'var(--bg-surface)';
+                input.style.border = '1px solid var(--accent)';
+                input.style.borderRadius = '8px';
+                input.style.padding = '2px 8px';
+                input.style.textAlign = 'center';
+                input.style.fontSize = '12px';
+                input.style.color = 'var(--text-primary)';
+                displayElement.innerText = '';
+                displayElement.appendChild(input);
+                input.focus();
+                input.select();
+
+                function commit() {
+                    let newVal = parseFloat(input.value);
+                    if (isNaN(newVal)) newVal = currentValue;
+                    if (validator) newVal = validator(newVal);
+                    if (unit === 'px/帧') newVal = Math.min(5.5, Math.max(0.3, newVal));
+                    else if (unit === 'px') newVal = Math.min(100, Math.max(14, newVal));
+                    else if (unit === '行') newVal = Math.min(20, Math.max(1, newVal));
+                    else if (unit === '字符') newVal = Math.min(100, Math.max(5, newVal));
+                    else if (unit === '' || unit === '倍数') newVal = Math.min(2.5, Math.max(1.0, newVal));
+                    else if (unit === '%') newVal = Math.min(100, Math.max(0, newVal));
+                    callback(newVal);
+                    displayElement.innerText = `${newVal}${unit ? ' ' + unit : ''}`;
+                    displayElement.removeChild(input);
+                }
+                function onBlur() { commit(); }
+                function onKeydown(e) { if (e.key === 'Enter') { commit(); } else if (e.key === 'Escape') { displayElement.innerText = oldText; displayElement.removeChild(input); } }
+                input.addEventListener('blur', onBlur);
+                input.addEventListener('keydown', onKeydown);
+            });
+        }
+
+        function bindSliderWithDisplay(slider, display, unit, onUpdate) {
+            const updateDisplay = () => { display.innerText = `${slider.value}${unit ? ' ' + unit : ''}`; };
+            slider.addEventListener('input', () => { updateDisplay(); onUpdate(parseFloat(slider.value)); });
+            updateDisplay();
+        }
+
+        bindSliderWithDisplay(speedSlider, speedValueDisplay, 'px/帧', (val) => {});
+        bindSliderWithDisplay(fontSizeSlider, fontSizeDisplay, 'px', (val) => { currentFontSize = val; onStyleChange(); });
+        bindSliderWithDisplay(lineHeightSlider, lineHeightDisplay, '', (val) => { currentLineHeight = val; onStyleChange(); });
+        bindSliderWithDisplay(lineCountSlider, lineCountDisplay, '行', (val) => { currentVisibleLines = val; onStyleChange(); });
+        bindSliderWithDisplay(windowPosSlider, windowPosDisplay, '%', (val) => { setWindowPosPercent(val); });
+        bindSliderWithDisplay(vWidthSlider, vWidthDisplay, '%', (val) => { setViewportWidthPercent(val); });
+        bindSliderWithDisplay(hPosSlider, hPosDisplay, '%', (val) => { setHWindowPosPercent(val); });
+
+        makeEditable(speedValueDisplay, parseFloat(speedSlider.value), 'px/帧', (newVal) => { speedSlider.value = newVal; speedValueDisplay.innerText = `${newVal} px/帧`; });
+        makeEditable(fontSizeDisplay, currentFontSize, 'px', (newVal) => { fontSizeSlider.value = newVal; currentFontSize = newVal; onStyleChange(); });
+        makeEditable(lineHeightDisplay, currentLineHeight, '', (newVal) => { lineHeightSlider.value = newVal; currentLineHeight = newVal; onStyleChange(); });
+        makeEditable(lineCountDisplay, currentVisibleLines, '行', (newVal) => { lineCountSlider.value = newVal; currentVisibleLines = newVal; onStyleChange(); });
+        makeEditable(windowPosDisplay, currentWindowPosPercent, '%', (newVal) => { setWindowPosPercent(newVal); });
+        makeEditable(vWidthDisplay, currentViewportWidthPercent, '%', (newVal) => { setViewportWidthPercent(newVal); });
+        makeEditable(hPosDisplay, currentHWindowPosPercent, '%', (newVal) => { setHWindowPosPercent(newVal); });
+
+        posUpBtn.addEventListener('click', () => shiftWindowPos(-5));
+        posDownBtn.addEventListener('click', () => shiftWindowPos(5));
+        hPosLeftBtn.addEventListener('click', () => { shiftHWindowPos(-10); });
+        hPosRightBtn.addEventListener('click', () => { shiftHWindowPos(10); });
+
+        let resizeObserver = null;
+        function observeResize() {
+            if (resizeObserver) resizeObserver.disconnect();
+            resizeObserver = new ResizeObserver(() => {
+                updateViewportPosition();
+                setViewportWidth();
+                updateViewportHPosition();
+            });
+            resizeObserver.observe(viewportPositioner);
+            resizeObserver.observe(viewport);
+        }
+
+        // 丝滑滚动动画（easeOutCubic）
+        let smoothScrollAnim = null;
+        function smoothScrollBy(offset, duration = 350) {
+            if (!viewport) return;
+            const start = viewport.scrollTop;
+            const target = start + offset;
+            const startTime = performance.now();
+            function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+            function animate(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = easeOutCubic(progress);
+                viewport.scrollTop = start + (target - start) * eased;
+                updatePositionInfo();
+                if (progress < 1) {
+                    smoothScrollAnim = requestAnimationFrame(animate);
+                } else {
+                    smoothScrollAnim = null;
+                }
+            }
+            if (smoothScrollAnim) cancelAnimationFrame(smoothScrollAnim);
+            smoothScrollAnim = requestAnimationFrame(animate);
+        }
+
+        // 快捷键系统
+        let shortcuts = { playpause: 'Space', reset: 'KeyR', exit: 'Escape', scrollup: 'ArrowUp', scrolldown: 'ArrowDown', mirror: 'KeyM', speedup: 'Equal', speeddown: 'Minus', fontup: 'BracketRight', fontdown: 'BracketLeft', theme: 'KeyT', align: 'KeyA' };
+        const defaultShortcuts = { playpause: 'Space', reset: 'KeyR', exit: 'Escape', scrollup: 'ArrowUp', scrolldown: 'ArrowDown', mirror: 'KeyM', speedup: 'Equal', speeddown: 'Minus', fontup: 'BracketRight', fontdown: 'BracketLeft', theme: 'KeyT', align: 'KeyA' };
+        function saveShortcuts() { localStorage.setItem('prompter_shortcuts', JSON.stringify(shortcuts)); }
+        function loadShortcuts() { const saved = localStorage.getItem('prompter_shortcuts'); if (saved) try { const parsed = JSON.parse(saved); const requiredKeys = Object.keys(defaultShortcuts); if (requiredKeys.every(k => parsed[k])) shortcuts = parsed; else { /* 合并缺失的键 */ Object.assign(shortcuts, defaultShortcuts, parsed); } } catch(e){} }
+        function getKeyDisplay(code) { if (code === 'Space') return 'Space'; if (code.startsWith('Key')) return code.slice(3); if (code === 'Escape') return 'ESC'; if (code === 'ArrowUp') return '↑'; if (code === 'ArrowDown') return '↓'; if (code === 'ArrowLeft') return '←'; if (code === 'ArrowRight') return '→'; if (code === 'BracketLeft') return '['; if (code === 'BracketRight') return ']'; if (code === 'Semicolon') return ';'; if (code === 'Quote') return "'"; if (code === 'Backslash') return '\\'; if (code === 'Slash') return '/'; if (code === 'Period') return '.'; if (code === 'Comma') return ','; if (code === 'Minus') return '-'; if (code === 'Equal') return '='; if (code === 'Backquote') return '`'; return code; }
+        function handleKeydown(e) { 
+            if (!document.fullscreenElement) return; 
+            if (e.target.tagName === 'TEXTAREA' || e.target.isContentEditable || e.target.tagName === 'INPUT') return; 
+            const code = e.code; 
+            if (code === shortcuts.playpause) { e.preventDefault(); togglePlayPause(); } 
+            else if (code === shortcuts.reset) { e.preventDefault(); resetScroll(); } 
+            else if (code === shortcuts.exit) { e.preventDefault(); exitFullscreen(); } 
+            else if (code === shortcuts.scrollup) { e.preventDefault(); smoothScrollBy(-getLineHeightPx()); }
+            else if (code === shortcuts.scrolldown) { e.preventDefault(); smoothScrollBy(getLineHeightPx()); }
+            else if (code === shortcuts.mirror) { e.preventDefault(); setMirror(!isMirrored); }
+            else if (code === shortcuts.speedup) { e.preventDefault(); adjustSpeed(0.2); }
+            else if (code === shortcuts.speeddown) { e.preventDefault(); adjustSpeed(-0.2); }
+            else if (code === shortcuts.fontup) { e.preventDefault(); adjustFontSize(2); }
+            else if (code === shortcuts.fontdown) { e.preventDefault(); adjustFontSize(-2); }
+            else if (code === shortcuts.theme) { e.preventDefault(); applyTheme(currentTheme === 'dark' ? 'light' : 'dark'); }
+            else if (code === shortcuts.align) { e.preventDefault(); cycleAlign(); }
+        }
+        document.addEventListener('keydown', handleKeydown);
+
+        // 模态框
+        const modal = document.getElementById('shortcutModal');
+        const customBtn = document.getElementById('customShortcutBtn');
+        const closeModalBtn = document.getElementById('closeShortcutModal');
+        const resetShortcutsBtn = document.getElementById('resetShortcutsBtn');
+        let activeKeyElement = null;
+        function openModal() { modal.classList.add('active'); }
+        function closeModal() { modal.classList.remove('active'); if (activeKeyElement) activeKeyElement.classList.remove('active'); activeKeyElement = null; }
+        function setupShortcutBinding(element, action) {
+            element.addEventListener('click', () => {
+                if (activeKeyElement) activeKeyElement.classList.remove('active');
+                activeKeyElement = element;
+                element.classList.add('active');
+                const onKey = (event) => {
+                    event.preventDefault();
+                    let code = event.code;
+                    shortcuts[action] = code;
+                    element.innerText = getKeyDisplay(code);
+                    element.classList.remove('active');
+                    activeKeyElement = null;
+                    saveShortcuts();
+                    document.removeEventListener('keydown', onKey);
+                };
+                document.addEventListener('keydown', onKey, { once: true });
+            });
+        }
+        function updateModalDisplay() {
+            const map = { shortcutPlayPause: 'playpause', shortcutReset: 'reset', shortcutExit: 'exit', shortcutScrollUp: 'scrollup', shortcutScrollDown: 'scrolldown', shortcutMirror: 'mirror', shortcutSpeedUp: 'speedup', shortcutSpeedDown: 'speeddown', shortcutFontUp: 'fontup', shortcutFontDown: 'fontdown', shortcutTheme: 'theme', shortcutAlign: 'align' };
+            for (const [id, key] of Object.entries(map)) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = getKeyDisplay(shortcuts[key]);
+            }
+        }
+        function resetToDefaultShortcuts() { shortcuts = { ...defaultShortcuts }; saveShortcuts(); updateModalDisplay(); }
+        setupShortcutBinding(document.getElementById('shortcutPlayPause'), 'playpause');
+        setupShortcutBinding(document.getElementById('shortcutReset'), 'reset');
+        setupShortcutBinding(document.getElementById('shortcutExit'), 'exit');
+        setupShortcutBinding(document.getElementById('shortcutScrollUp'), 'scrollup');
+        setupShortcutBinding(document.getElementById('shortcutScrollDown'), 'scrolldown');
+        setupShortcutBinding(document.getElementById('shortcutMirror'), 'mirror');
+        setupShortcutBinding(document.getElementById('shortcutSpeedUp'), 'speedup');
+        setupShortcutBinding(document.getElementById('shortcutSpeedDown'), 'speeddown');
+        setupShortcutBinding(document.getElementById('shortcutFontUp'), 'fontup');
+        setupShortcutBinding(document.getElementById('shortcutFontDown'), 'fontdown');
+        setupShortcutBinding(document.getElementById('shortcutTheme'), 'theme');
+        setupShortcutBinding(document.getElementById('shortcutAlign'), 'align');
+        customBtn.onclick = openModal;
+        closeModalBtn.onclick = closeModal;
+        resetShortcutsBtn.onclick = resetToDefaultShortcuts;
+
+        // 浏览器全屏控制
+        function enterFullscreen() {
+            if (appContainer.requestFullscreen) {
+                appContainer.requestFullscreen().catch(err => console.warn(err));
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(err => console.warn(err));
+            }
+        }
+
+        // 创建/销毁底部控制栏（全屏时创建，退出时销毁）
+        let compactHoverTimer = null;
+
+        function createCompactControls() {
+            if (compactBar) {
+                compactBar.remove();
+                compactBar = null;
+            }
+            const barDiv = document.createElement('div');
+            barDiv.className = 'compact-controls';
+            barDiv.innerHTML = `
+                <div class="compact-primary">
+                    <button class="compact-btn${isScrolling ? ' active' : ''}" id="compactPlayPause">${isScrolling ? '⏸ 暂停' : '▶ 播放'}</button>
+                    <button class="compact-btn" id="compactReset">↺</button>
+                    <div class="compact-sep"></div>
+                    <div class="compact-group"><span>速度</span><input type="range" id="compactSpeed" min="0.3" max="5.5" step="0.05" value="${speedSlider.value}"><span id="compactSpeedVal" class="compact-value">${parseFloat(speedSlider.value).toFixed(1)}</span></div>
+                    <div class="compact-sep"></div>
+                    <button class="compact-btn" id="compactMore">⚙</button>
+                    <button class="compact-btn" id="exitFullscreenBtn">✕</button>
+                </div>
+                <div class="compact-expanded" id="compactExpanded">
+                    <div class="compact-group"><span>字号</span><input type="range" id="compactFontSize" min="14" max="100" step="1" value="${currentFontSize}"><span id="compactFontVal" class="compact-value">${currentFontSize}</span></div>
+                    <div class="compact-group"><span>行距</span><input type="range" id="compactLineHeight" min="1.0" max="2.5" step="0.02" value="${currentLineHeight}"><span id="compactLineHeightVal" class="compact-value">${currentLineHeight.toFixed(2)}</span></div>
+                    <div class="compact-group"><span>行数</span><input type="range" id="compactLineCount" min="1" max="20" step="1" value="${currentVisibleLines}"><span id="compactLineVal" class="compact-value">${currentVisibleLines}</span></div>
+                    <div class="compact-group"><span>↑↓</span><input type="range" id="compactWinPos" min="0" max="100" step="1" value="${currentWindowPosPercent}"><span id="compactWinPosVal" class="compact-value">${currentWindowPosPercent}%</span></div>
+                    <div class="compact-group"><span>宽度</span><input type="range" id="compactVWidth" min="40" max="100" step="1" value="${currentViewportWidthPercent}"><span id="compactVWidthVal" class="compact-value">${currentViewportWidthPercent}%</span></div>
+                    <div class="compact-group"><span>↔</span><input type="range" id="compactHPos" min="0" max="100" step="1" value="${currentHWindowPosPercent}"><span id="compactHPosVal" class="compact-value">${currentHWindowPosPercent}%</span></div>
+                    <div class="compact-group">
+                        <button class="compact-btn" id="compactHPosLeft">◀</button>
+                        <button class="compact-btn" id="compactHPosRight">▶</button>
+                    </div>
+                    <div class="compact-group">
+                        <button class="compact-btn${isMirrored?' active':''}" id="compactMirror">🪞</button>
+                    </div>
+                </div>
+            `;
+            appContainer.appendChild(barDiv);
+
+            // 播放/暂停切换
+            document.getElementById('compactPlayPause')?.addEventListener('click', togglePlayPause);
+            document.getElementById('compactReset')?.addEventListener('click', resetScroll);
+
+            // 展开更多
+            const moreBtn = document.getElementById('compactMore');
+            const expanded = document.getElementById('compactExpanded');
+            if (moreBtn && expanded) {
+                moreBtn.addEventListener('click', () => {
+                    expanded.classList.toggle('show');
+                    moreBtn.classList.toggle('active');
+                });
+            }
+
+            // 速度
+            const compactSpeed = document.getElementById('compactSpeed');
+            const compactSpeedVal = document.getElementById('compactSpeedVal');
+            if (compactSpeed) compactSpeed.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                speedSlider.value = val;
+                speedValueDisplay.innerText = `${val} px/帧`;
+                if (compactSpeedVal) compactSpeedVal.textContent = val.toFixed(1);
+            });
+
+            // 字号
+            const compactFont = document.getElementById('compactFontSize');
+            const compactFontVal = document.getElementById('compactFontVal');
+            if (compactFont) compactFont.addEventListener('input', (e) => {
+                let val = parseInt(e.target.value);
+                fontSizeSlider.value = val; currentFontSize = val;
+                fontSizeDisplay.innerText = `${val}px`;
+                onStyleChange();
+                if (compactFontVal) compactFontVal.textContent = val;
+            });
+
+            // 行距
+            const compactLH = document.getElementById('compactLineHeight');
+            const compactLHVal = document.getElementById('compactLineHeightVal');
+            if (compactLH) compactLH.addEventListener('input', (e) => {
+                let val = parseFloat(e.target.value);
+                lineHeightSlider.value = val; currentLineHeight = val;
+                onStyleChange();
+                if (compactLHVal) compactLHVal.textContent = val.toFixed(2);
+            });
+
+            // 行数
+            const compactLC = document.getElementById('compactLineCount');
+            const compactLCVal = document.getElementById('compactLineVal');
+            if (compactLC) compactLC.addEventListener('input', (e) => {
+                let val = parseInt(e.target.value);
+                lineCountSlider.value = val; currentVisibleLines = val;
+                onStyleChange();
+                if (compactLCVal) compactLCVal.textContent = val;
+                lineCountDisplay.innerText = `${val} 行`;
+            });
+
+            // 窗口位置
+            const compactWP = document.getElementById('compactWinPos');
+            const compactWPVal = document.getElementById('compactWinPosVal');
+            if (compactWP) {
+                compactWP.value = currentWindowPosPercent;
+                compactWP.addEventListener('input', (e) => {
+                    let val = parseInt(e.target.value);
+                    windowPosSlider.value = val;
+                    setWindowPosPercent(val);
+                    if (compactWPVal) compactWPVal.textContent = `${val}%`;
+                });
+            }
+
+            // 窗口宽度
+            const compactVW = document.getElementById('compactVWidth');
+            const compactVWVal = document.getElementById('compactVWidthVal');
+            if (compactVW) {
+                compactVW.value = currentViewportWidthPercent;
+                compactVW.addEventListener('input', (e) => {
+                    let val = parseInt(e.target.value);
+                    vWidthSlider.value = val;
+                    setViewportWidthPercent(val);
+                    if (compactVWVal) compactVWVal.textContent = `${val}%`;
+                });
+            }
+
+            // 水平位置
+            const compactHP = document.getElementById('compactHPos');
+            const compactHPVal = document.getElementById('compactHPosVal');
+            if (compactHP) {
+                compactHP.value = currentHWindowPosPercent;
+                compactHP.addEventListener('input', (e) => {
+                    let val = parseInt(e.target.value);
+                    hPosSlider.value = val;
+                    setHWindowPosPercent(val);
+                    if (compactHPVal) compactHPVal.textContent = `${val}%`;
+                });
+            }
+
+            // 水平位置左右按钮
+            document.getElementById('compactHPosLeft')?.addEventListener('click', () => {
+                shiftHWindowPos(-10);
+            });
+            document.getElementById('compactHPosRight')?.addEventListener('click', () => {
+                shiftHWindowPos(10);
+            });
+
+            document.getElementById('exitFullscreenBtn')?.addEventListener('click', exitFullscreen);
+
+            // 镜像
+            document.getElementById('compactMirror')?.addEventListener('click', () => {
+                setMirror(!isMirrored);
+            });
+
+            if (isScrolling) barDiv.classList.add('hidden');
+            compactBar = barDiv;
+        }
+
+        function updateCompactMirrorBtn() {
+            const btn = document.getElementById('compactMirror');
+            if (btn) {
+                if (isMirrored) btn.classList.add('active');
+                else btn.classList.remove('active');
+            }
+        }
+
+        // 全屏时鼠标移到底部区域临时显示控制栏
+        function setupFullscreenMouseTracker() {
+            document.addEventListener('mousemove', onFullscreenMouseMove);
+        }
+        function teardownFullscreenMouseTracker() {
+            document.removeEventListener('mousemove', onFullscreenMouseMove);
+            if (compactHoverTimer) { clearTimeout(compactHoverTimer); compactHoverTimer = null; }
+        }
+        function onFullscreenMouseMove(e) {
+            if (!document.fullscreenElement || !compactBar) return;
+            const screenH = window.innerHeight;
+            const inBottomZone = e.clientY > screenH * 0.82;
+            if (inBottomZone) {
+                compactBar.classList.remove('hidden');
+                if (compactHoverTimer) clearTimeout(compactHoverTimer);
+                if (isScrolling) {
+                    compactHoverTimer = setTimeout(() => {
+                        if (isScrolling && compactBar) compactBar.classList.add('hidden');
+                    }, 2200);
+                }
+            }
+        }
+
+        function destroyCompactControls() {
+            if (compactBar) {
+                compactBar.remove();
+                compactBar = null;
+            }
+        }
+
+        function onFullscreenChange() {
+            if (document.fullscreenElement) {
+                fullscreenBtn.innerHTML = '🗗';
+                createCompactControls();
+                setupFullscreenMouseTracker();
+                setTimeout(() => { updateViewportPosition(); updatePositionInfo(); }, 50);
+            } else {
+                fullscreenBtn.innerHTML = '⛶';
+                teardownFullscreenMouseTracker();
+                destroyCompactControls();
+                setTimeout(() => { updateViewportPosition(); updatePositionInfo(); }, 30);
+            }
+        }
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) enterFullscreen();
+            else exitFullscreen();
+        });
+
+        // 分割条拖拽
+        const controlPanel = document.getElementById('controlPanel');
+        const splitter = document.getElementById('splitter');
+        let isSplitterDrag = false, splitStartX, startLeftWidth;
+        splitter.addEventListener('mousedown', (e) => {
+            if (document.fullscreenElement) return;
+            isSplitterDrag = true; splitStartX = e.clientX; startLeftWidth = controlPanel.offsetWidth;
+            document.body.style.cursor = 'col-resize';
+            const onMove = (e) => { if (!isSplitterDrag) return; let newWidth = startLeftWidth + (e.clientX - splitStartX); controlPanel.style.width = `${Math.min(window.innerWidth*0.65, Math.max(220, newWidth))}px`; updateViewportPosition(); updatePositionInfo(); };
+            const onUp = () => { isSplitterDrag = false; document.body.style.cursor = ''; document.removeEventListener('mousemove', onMove); };
+            document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp, { once: true });
+            e.preventDefault();
+        });
+
+        // 基础控件事件
+        applyBtn.onclick = () => { updateOriginalFromTextarea(); stopScrolling(true); if (scrollStateSpan) scrollStateSpan.innerText = '📥 已加载'; autoSaveText(); };
+        resetSampleBtn.onclick = () => { loadSample(); stopScrolling(true); autoSaveText(); };
+
+        // 文件上传
+        const uploadBtn = document.getElementById('uploadFileBtn');
+        const fileInput = document.getElementById('fileUploadInput');
+        if (uploadBtn && fileInput) {
+            uploadBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) handleFileLoad(file);
+                fileInput.value = ''; // 允许重复选择同一文件
+            });
+        }
+        function handleFileLoad(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+            // .docx 需要异步处理
+            if (ext === 'docx') {
+                file.arrayBuffer().then(buf => {
+                    return extractDocxText(buf);
+                }).then(text => {
+                    textarea.value = text;
+                    autoSaveText();
+                    updateOriginalFromTextarea();
+                    if (scrollStateSpan) scrollStateSpan.innerText = `📥 ${file.name}`;
+                }).catch(() => {
+                    alert('该 .docx 文件解析失败，请导出为 .txt 后重试');
+                });
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                textarea.value = ev.target.result;
+                autoSaveText();
+                updateOriginalFromTextarea();
+                if (scrollStateSpan) scrollStateSpan.innerText = `📥 ${file.name}`;
+            };
+            reader.onerror = () => alert('文件读取失败');
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        // .docx 纯文本提取（纯 JS 实现 ZIP+Inflate+XML 解析，无任何外部依赖）
+        async function extractDocxText(arrayBuffer) {
+            try {
+                const uint8 = new Uint8Array(arrayBuffer);
+                if (uint8[0] !== 0x50 || uint8[1] !== 0x4B) throw new Error('Not a valid docx');
+                const text = await extractTextFromZip(uint8, 'word/document.xml');
+                if (!text) throw new Error('document.xml not found');
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(text, 'application/xml');
+                let result = '';
+                xmlDoc.querySelectorAll('w\\:t, t').forEach(el => result += el.textContent);
+                return result || '(未提取到文本内容)';
+            } catch(e) {
+                console.warn('docx parse error:', e);
+                return '(无法解析此 .docx 文件，请另存为 .txt 格式)';
+            }
+        }
+
+        // ZIP 遍历 + 解压
+        async function extractTextFromZip(data, targetPath) {
+            let offset = 0;
+            function readU32() { const v = data[offset] | (data[offset+1]<<8) | (data[offset+2]<<16) | (data[offset+3]<<24); offset += 4; return v >>> 0; }
+            function readU16() { const v = data[offset] | (data[offset+1]<<8); offset += 2; return v; }
+            for (let i = data.length - 22; i > Math.max(0, data.length - 65557); i--) {
+                if (data[i] === 0x50 && data[i+1] === 0x4b && data[i+2] === 0x05 && data[i+3] === 0x06) {
+                    // EOCD 结构: 签名(4) + 磁盘号(2) + 起始磁盘(2) + 本磁盘条目(2) + 总条目(2) + 大小(4) + 偏移(4) + 注释长度(2)
+                    const cdEntries = data[i+10] | (data[i+11]<<8);
+                    const cdOffset = (data[i+16] | (data[i+17]<<8) | (data[i+18]<<16) | (data[i+19]<<24)) >>> 0;
+                    offset = cdOffset;
+                    for (let j = 0; j < cdEntries; j++) {
+                        if (offset + 46 > data.length) break;
+                        // Central Directory Entry: 签名(4) + 版本(2+2) + 标志(2) + 方法(2) + 时间(2+2) + CRC(4) + 压缩大小(4) + 原始大小(4) = 28
+                        // + 文件名长度(2) + 额外长度(2) + 注释长度(2) + 磁盘号(2) + 内部属性(2) + 外部属性(4) + 本地头偏移(4) = 18
+                        const sig = data[offset] | (data[offset+1]<<8) | (data[offset+2]<<16) | (data[offset+3]<<24);
+                        if (sig !== 0x02014b50) break;
+                        const fnameLen = data[offset+28] | (data[offset+29]<<8);
+                        const extraLen = data[offset+30] | (data[offset+31]<<8);
+                        const commentLen = data[offset+32] | (data[offset+33]<<8);
+                        const localHdrOff = (data[offset+42] | (data[offset+43]<<8) | (data[offset+44]<<16) | (data[offset+45]<<24)) >>> 0;
+                        const fnameBytes = data.subarray(offset + 46, offset + 46 + fnameLen);
+                        const fname = new TextDecoder().decode(fnameBytes);
+                        offset += 46 + fnameLen + extraLen + commentLen;
+                        if (fname === targetPath) {
+                            // Local File Header: 签名(4) + 版本(2) + 标志(2) + 方法(2) + 时间(2+2) + CRC(4) + 压缩大小(4) + 原始大小(4) + 文件名长度(2) + 额外长度(2) = 30
+                            const lfnameLen = data[localHdrOff + 26] | (data[localHdrOff + 27]<<8);
+                            const lextraLen = data[localHdrOff + 28] | (data[localHdrOff + 29]<<8);
+                            const dataStart = localHdrOff + 30 + lfnameLen + lextraLen;
+                            const compMethod = data[localHdrOff + 8] | (data[localHdrOff + 9]<<8);
+                            const compSize = (data[localHdrOff+18] | (data[localHdrOff+19]<<8) | (data[localHdrOff+20]<<16) | (data[localHdrOff+21]<<24)) >>> 0;
+                            const compressed = data.subarray(dataStart, dataStart + compSize);
+                            if (compMethod === 0) return new TextDecoder().decode(compressed);
+                            if (compMethod === 8) {
+                                const decompressed = await inflateRawDecompress(compressed);
+                                return new TextDecoder().decode(decompressed);
+                            }
+                            throw new Error('Unsupported compression');
+                        }
+                    }
+                    break;
+                }
+            }
+            throw new Error('File not found in archive: ' + targetPath);
+        }
+
+        // =====================================================
+        // inflate 解压：优先浏览器原生 API，fallback 纯 JS
+        // =====================================================
+        async function inflateRawDecompress(compressed) {
+            // 方案1：浏览器原生 DecompressionStream（Chrome 80+, Edge 80+）
+            if (typeof DecompressionStream !== 'undefined') {
+                try {
+                    const ds = new DecompressionStream('deflate-raw');
+                    const writer = ds.writable.getWriter();
+                    const writePromise = writer.write(compressed).then(() => writer.close());
+                    const result = await new Response(ds.readable).arrayBuffer();
+                    return new Uint8Array(result);
+                } catch(e) {
+                    console.warn('DecompressionStream failed, trying pure JS fallback:', e);
+                }
+            }
+            // 方案2：纯 JS inflate (RFC 1951)
+            return inflateRawPureJS(compressed);
+        }
+
+        function inflateRawPureJS(input) {
+            let ip = 0, ib = 0;
+            const out = [];
+
+            // RFC 1951: bits packed LSB first within each byte
+            function readBit() {
+                if (ip >= input.length) return 0;
+                const b = (input[ip] >> ib) & 1;
+                ib++;
+                if (ib === 8) { ib = 0; ip++; }
+                return b;
+            }
+            // 读 n 个 bit（LSB first，第一个读到的 bit 是最低位）
+            function readBits(n) {
+                let v = 0;
+                for (let i = 0; i < n; i++) v |= (readBit() << i);
+                return v;
+            }
+            // 读 n 个 bit（MSB first，用于 Huffman 编码——第一个读到的 bit 是最高位）
+            function readBitsMSB(n) {
+                let v = 0;
+                for (let i = 0; i < n; i++) v = (v << 1) | readBit();
+                return v;
+            }
+            function readByte() {
+                if (ip >= input.length) return 0;
+                return input[ip++];
+            }
+            function alignByte() { if (ib > 0) { ib = 0; ip++; } }
+
+            // Huffman 解码：返回 { codes: Map<number, {len,symbol}>, maxLen }
+            function buildHuffman(lengths) {
+                let maxLen = 0;
+                for (let i = 0; i < lengths.length; i++) if (lengths[i] > maxLen) maxLen = lengths[i];
+                if (maxLen === 0) return null;
+
+                const blCount = new Array(maxLen + 1).fill(0);
+                for (let i = 0; i < lengths.length; i++) blCount[lengths[i]]++;
+
+                const nextCode = new Array(maxLen + 1).fill(0);
+                let code = 0;
+                blCount[0] = 0;
+                for (let bits = 1; bits <= maxLen; bits++) {
+                    code = (code + blCount[bits - 1]) << 1;
+                    nextCode[bits] = code;
+                }
+
+                // 用数组: [code, len, symbol] 列表，按 len 排序查找
+                const entries = [];
+                for (let sym = 0; sym < lengths.length; sym++) {
+                    const len = lengths[sym];
+                    if (len > 0) {
+                        entries.push({ code: nextCode[len]++, len, symbol: sym });
+                    }
+                }
+                // 按 len 排序，相同 len 按 code 排序
+                entries.sort((a, b) => a.len - b.len || a.code - b.code);
+                return { entries, maxLen };
+            }
+
+            function decodeSym(table) {
+                let code = 0;
+                for (let len = 1; len <= table.maxLen; len++) {
+                    code = (code << 1) | readBit();
+                    // 在 entries 中查找匹配 code 和 len 的条目
+                    for (let i = 0; i < table.entries.length; i++) {
+                        const e = table.entries[i];
+                        if (e.len === len && e.code === code) return e.symbol;
+                        if (e.len > len) break; // 已排序，后面的更长了
+                    }
+                }
+                throw new Error('Invalid Huffman code');
+            }
+
+            // 固定 Huffman 码表
+            const fixedLitLen = [];
+            for (let i = 0; i <= 143; i++) fixedLitLen.push(8);
+            for (let i = 144; i <= 255; i++) fixedLitLen.push(9);
+            for (let i = 256; i <= 279; i++) fixedLitLen.push(7);
+            for (let i = 280; i <= 287; i++) fixedLitLen.push(8);
+            const fixedLitTbl = buildHuffman(fixedLitLen);
+
+            const fixedDistLen = new Array(32).fill(5);
+            const fixedDistTbl = buildHuffman(fixedDistLen);
+
+            const LEN_BASE = [3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258];
+            const LEN_EXTRA = [0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0];
+            const DST_BASE = [1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577];
+            const DST_EXTRA = [0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13];
+            const ORDER = [16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];
+
+            let bfinal = 0;
+            do {
+                bfinal = readBit();
+                const btype = readBits(2);
+
+                if (btype === 0) {
+                    alignByte();
+                    const len = readBits(16);
+                    readBits(16);
+                    for (let i = 0; i < len; i++) out.push(readByte());
+                } else if (btype === 1) {
+                    decodeBlock(fixedLitTbl, fixedDistTbl);
+                } else if (btype === 2) {
+                    const hlit = readBits(5) + 257;
+                    const hdist = readBits(5) + 1;
+                    const hclen = readBits(4) + 4;
+                    const clLens = new Array(19).fill(0);
+                    for (let i = 0; i < hclen; i++) clLens[ORDER[i]] = readBits(3);
+                    const clTbl = buildHuffman(clLens);
+
+                    const codeLens = [];
+                    while (codeLens.length < hlit + hdist) {
+                        const sym = decodeSym(clTbl);
+                        if (sym < 16) {
+                            codeLens.push(sym);
+                        } else if (sym === 16) {
+                            const rep = readBits(2) + 3;
+                            const prev = codeLens[codeLens.length - 1];
+                            for (let r = 0; r < rep; r++) codeLens.push(prev);
+                        } else if (sym === 17) {
+                            const rep = readBits(3) + 3;
+                            for (let r = 0; r < rep; r++) codeLens.push(0);
+                        } else if (sym === 18) {
+                            const rep = readBits(7) + 11;
+                            for (let r = 0; r < rep; r++) codeLens.push(0);
+                        }
+                    }
+
+                    const dynLitTbl = buildHuffman(codeLens.slice(0, hlit));
+                    const dynDistTbl = buildHuffman(codeLens.slice(hlit));
+                    decodeBlock(dynLitTbl, dynDistTbl);
+                } else {
+                    throw new Error('Invalid deflate block type');
+                }
+            } while (!bfinal);
+
+            return new Uint8Array(out);
+
+            function decodeBlock(litTbl, distTbl) {
+                for (;;) {
+                    const sym = decodeSym(litTbl);
+                    if (sym < 256) {
+                        out.push(sym);
+                    } else if (sym === 256) {
+                        return;
+                    } else {
+                        const li = sym - 257;
+                        let length = LEN_BASE[li];
+                        if (LEN_EXTRA[li] > 0) length += readBits(LEN_EXTRA[li]);
+
+                        const di = decodeSym(distTbl);
+                        let distance = DST_BASE[di];
+                        if (DST_EXTRA[di] > 0) distance += readBits(DST_EXTRA[di]);
+
+                        const start = out.length - distance;
+                        for (let i = 0; i < length; i++) out.push(out[start + i]);
+                    }
+                }
+            }
+        }
+
+        // textarea 拖拽上传（绑定到 wrapper）
+        let dragCounter = 0;
+        const textareaWrapper = document.getElementById('textareaWrapper');
+        if (textareaWrapper) {
+            textareaWrapper.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dragCounter++;
+                textareaWrapper.classList.add('drag-over');
+            });
+            textareaWrapper.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            textareaWrapper.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dragCounter--;
+                if (dragCounter <= 0) { dragCounter = 0; textareaWrapper.classList.remove('drag-over'); }
+            });
+            textareaWrapper.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dragCounter = 0;
+                textareaWrapper.classList.remove('drag-over');
+                const files = e.dataTransfer?.files;
+                if (files && files.length > 0) handleFileLoad(files[0]);
+            });
+        }
+        playBtn.onclick = startScrolling; pauseBtn.onclick = () => stopScrolling(true); resetBtn.onclick = resetScroll;
+
+        // 镜像模式
+        let isMirrored = false;
+        const mirrorBtn = document.getElementById('mirrorBtn');
+        function setMirror(enabled) {
+            isMirrored = enabled;
+            if (prompterContent) {
+                if (isMirrored) prompterContent.classList.add('mirrored');
+                else prompterContent.classList.remove('mirrored');
+            }
+            if (mirrorBtn) mirrorBtn.innerText = isMirrored ? '🪞 开启' : '🪞 关闭';
+            updateCompactMirrorBtn();
+        }
+        if (mirrorBtn) mirrorBtn.onclick = () => setMirror(!isMirrored);
+        viewport.addEventListener('scroll', updatePositionInfo);
+
+        // 文本自动保存（输入即存，无需手动）
+        const AUTOSAVE_KEY = 'prompter_autosave';
+        let autoSaveTimer = null;
+        function autoSaveText() {
+            if (autoSaveTimer) clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                localStorage.setItem(AUTOSAVE_KEY, textarea.value);
+            }, 500);
+        }
+        function loadAutoSave() {
+            const saved = localStorage.getItem(AUTOSAVE_KEY);
+            if (saved !== null && saved.length > 0) {
+                textarea.value = saved;
+                updateOriginalFromTextarea();
+                return true;
+            }
+            return false;
+        }
+        textarea.addEventListener('input', autoSaveText);
+
+        // 初始化
+        loadShortcuts(); updateModalDisplay();
+        if (!loadAutoSave()) loadSample();  // 有自动保存则恢复，否则加载示例
+        observeResize();
+        setViewportWidth();
+        setTimeout(() => { setViewportHeight(); resetScrollToTop(); updateViewportPosition(); setViewportWidth(); updateViewportHPosition(); }, 100);
+    })();
+</script>
+</body>
+</html>
